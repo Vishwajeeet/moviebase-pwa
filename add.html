@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0d0d0d">
+  <title>MovieBase — Add Title</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <!-- Firebase CDN -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <!-- App scripts -->
+  <script src="/js/config.js"></script>
+  <script src="/js/firebase-init.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/firestore.js"></script>
+  <script src="/js/tmdb.js"></script>
+  <script src="/js/add.js"></script>
+
+  <!-- PWA -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
+</body>
+</html>
