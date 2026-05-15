@@ -134,18 +134,16 @@ AppAuth.requireAuth(function(user) {
       var posterUrl =
         AppUtils.getPosterUrl(entry.poster);
 
-      var posterHTML =
+            var posterHTML =
         posterUrl
 
         ? '<img class="poster-img" src="' +
-          posterUrl +
-          '" alt="' +
-          entry.title +
-          '" onerror="this.parentNode.innerHTML=' +
-          '\'<' +
-          'div class=\\\"poster-placeholder\\\">🎬</div>\'">'
+            posterUrl +
+            '" alt="' +
+            entry.title +
+            '" onerror="this.style.display=\'none\'">'
 
-        : '<div class="poster-placeholder">🎬</div>';
+  : '<div class="poster-placeholder">🎬</div>';
 
       var seasonBadge =
         entry.type === 'series'

@@ -3,31 +3,157 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0d0d0d">
-  <title>MovieBase — Add Title</title>
+  <title>Add - MovieBase</title>
   <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
+  <body>
+
+  <div class="app-container">
+    <main class="page">
+
+      <div id="toast" class="toast"></div>
+
+      <!-- STEP 1 -->
+      <div id="step-1" class="step active">
+
+        <div class="page-header">
+          <button id="btn-back-s1"
+            class="back-btn">←</button>
+
+          <h1 class="page-title">
+            What did you watch?
+          </h1>
+        </div>
+
+        <div class="toggle-pair">
+          <button id="btn-movie"
+            class="toggle-btn active">
+            🎬 Movie
+          </button>
+
+          <button id="btn-series"
+            class="toggle-btn">
+            📺 Series
+          </button>
+        </div>
+
+        <input
+          type="text"
+          id="search-input"
+          class="input-field"
+          placeholder="Search for a title..."
+        >
+
+        <div
+          id="search-status"
+          class="text-sm text-muted"
+          style="margin:12px 0"
+        ></div>
+
+        <div
+          id="search-results"
+          class="results-list"
+        ></div>
+
+      </div>
+
+      <!-- STEP 2 -->
+      <div id="step-2" class="step">
+
+        <div class="page-header">
+          <button id="btn-back-s2"
+            class="back-btn">←</button>
+
+          <h1 class="page-title">
+            Pick a season
+          </h1>
+        </div>
+
+        <div id="seasons-list"></div>
+
+      </div>
+
+      <!-- STEP 3 -->
+      <div id="step-3" class="step">
+
+        <div class="page-header">
+          <button id="btn-back-s3"
+            class="back-btn">←</button>
+
+          <h1 class="page-title">
+            Almost done
+          </h1>
+        </div>
+
+        <img
+          id="preview-poster"
+          style="width:120px;border-radius:10px;margin-bottom:12px"
+          alt="Poster"
+        >
+
+        <h2 id="preview-title"
+          style="font-size:18px;margin-bottom:4px">
+        </h2>
+
+        <p id="preview-sub"
+          class="text-sm text-muted"
+          style="margin-bottom:24px">
+        </p>
+
+        <label class="label">
+          When did you watch it?
+        </label>
+
+        <div
+          class="month-scroll"
+          id="month-chips">
+        </div>
+
+        <label class="label">
+          How was it?
+        </label>
+
+        <div
+          class="emoji-row"
+          id="emoji-row">
+        </div>
+
+        <button
+          id="btn-add"
+          class="btn btn-primary"
+          disabled>
+          Add to Collection
+        </button>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Scripts -->
   <!-- Firebase CDN -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
-  <!-- App scripts -->
-  <script src="/js/config.js"></script>
-  <script src="/js/firebase-init.js"></script>
-  <script src="/js/auth.js"></script>
-  <script src="/js/utils.js"></script>
-  <script src="/js/firestore.js"></script>
-  <script src="/js/tmdb.js"></script>
-  <script src="/js/add.js"></script>
+    <!-- Shared scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/firebase-init.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/firestore.js"></script>
+    <script src="/js/tmdb.js"></script>
 
-  <!-- PWA -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js');
-    }
-  </script>
+    <!-- Page script -->
+    <script src="/js/add.js"></script>
+
+    <!-- PWA -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js');
+      }
+    </script>
 </body>
 </html>
