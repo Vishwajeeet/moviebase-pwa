@@ -237,7 +237,8 @@ button {
 .fab {
   position: fixed;
   bottom: 24px;
-  right: 24px;
+  left: 50%;
+  transform: translateX(180px);
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -256,7 +257,7 @@ button {
 }
 
 .fab:active {
-  transform: scale(0.90);
+  transform: translateX(180px) scale(0.90);
 }
 
 /* FORM */

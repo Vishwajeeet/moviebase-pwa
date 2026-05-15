@@ -2,25 +2,251 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
   <meta name="theme-color" content="#0d0d0d">
+
   <title>MovieBase — Home</title>
+
   <link rel="manifest" href="/manifest.json">
-  <link rel="stylesheet" href="/css/main.css">
+
+  <link
+    rel="stylesheet"
+    href="/css/main.css"
+  >
 </head>
+
 <body>
+
+  <div class="app-container">
+
+    <main class="page">
+
+      <header class="page-header">
+
+        <h1 class="page-title">
+          MovieBase
+        </h1>
+
+        <div>
+
+          <button
+            class="icon-btn"
+            id="btn-stats"
+          >
+            📊
+          </button>
+
+          <button
+            class="icon-btn"
+            id="btn-signout"
+          >
+            →
+          </button>
+
+        </div>
+
+      </header>
+
+      <div
+        id="fun-fact"
+        class="fun-fact-box"
+      >
+        Loading your stats...
+      </div>
+
+      <section class="stat-strip">
+
+        <div class="stat-box">
+          <div
+            class="stat-number"
+            id="stat-total"
+          >
+            —
+          </div>
+
+          <div class="stat-label">
+            Total
+          </div>
+        </div>
+
+        <div class="stat-box">
+          <div
+            class="stat-number"
+            id="stat-hours"
+          >
+            —
+          </div>
+
+          <div class="stat-label">
+            Hours
+          </div>
+        </div>
+
+        <div class="stat-box">
+          <div
+            class="stat-number"
+            id="stat-month"
+          >
+            —
+          </div>
+
+          <div class="stat-label">
+            This Month
+          </div>
+        </div>
+
+        <div class="stat-box">
+          <div
+            class="stat-number"
+            id="stat-type"
+          >
+            —
+          </div>
+
+          <div class="stat-label">
+            Movies · Series
+          </div>
+        </div>
+
+      </section>
+
+      <section>
+
+        <p class="section-title">
+          My Playlists
+        </p>
+
+        <div
+          id="playlists-grid"
+          class="grid-2"
+        >
+
+          <div
+            class="skeleton"
+            style="
+              height:140px;
+              border-radius:12px;
+            "
+          ></div>
+
+          <div
+            class="skeleton"
+            style="
+              height:140px;
+              border-radius:12px;
+            "
+          ></div>
+
+          <div
+            class="skeleton"
+            style="
+              height:140px;
+              border-radius:12px;
+            "
+          ></div>
+
+          <div
+            class="skeleton"
+            style="
+              height:140px;
+              border-radius:12px;
+            "
+          ></div>
+
+        </div>
+
+        <div
+          id="empty-playlists"
+          class="empty-state"
+          style="display:none"
+        >
+
+          <div class="empty-state-icon">
+            📂
+          </div>
+
+          <p class="empty-state-text">
+            No playlists yet.
+            Tap + to create one.
+          </p>
+
+        </div>
+
+      </section>
+
+    </main>
+
+  </div>
+
+  <button
+    class="fab"
+    id="fab-create"
+  >
+    +
+  </button>
+
+  <div
+    class="modal-overlay"
+    id="create-modal"
+  >
+
+    <div class="modal-box">
+
+      <p class="modal-title">
+        New Playlist
+      </p>
+
+      <input
+        class="input-field"
+        id="playlist-name-input"
+        placeholder="e.g. 2026, Horror Run..."
+        maxlength="40"
+      >
+
+      <div class="modal-actions">
+
+        <button
+          class="btn btn-ghost"
+          id="btn-cancel-modal"
+        >
+          Cancel
+        </button>
+
+        <button
+          class="btn btn-primary"
+          id="btn-create-playlist"
+          disabled
+        >
+          Create
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div id="toast" class="toast"></div>
+
   <!-- Firebase CDN -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
-  <!-- App scripts -->
+  <!-- Shared scripts -->
   <script src="/js/config.js"></script>
   <script src="/js/firebase-init.js"></script>
   <script src="/js/auth.js"></script>
   <script src="/js/utils.js"></script>
   <script src="/js/firestore.js"></script>
   <script src="/js/tmdb.js"></script>
+
+  <!-- Page script -->
   <script src="/js/home.js"></script>
 
   <!-- PWA -->
@@ -29,5 +255,6 @@
       navigator.serviceWorker.register('/sw.js');
     }
   </script>
+
 </body>
 </html>
