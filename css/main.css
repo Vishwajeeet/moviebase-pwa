@@ -238,7 +238,7 @@ button {
   position: fixed;
   bottom: 24px;
   left: 50%;
-  transform: translateX(180px);
+  margin-left: 180px;
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -252,12 +252,22 @@ button {
   justify-content: center;
   box-shadow: 0 4px 20px rgba(201,168,76,0.4);
   z-index: 100;
-  transition: transform var(--transition);
+  transition:
+    transform var(--transition),
+    opacity var(--transition);
   touch-action: manipulation;
 }
 
 .fab:active {
-  transform: translateX(180px) scale(0.90);
+  transform: scale(0.90);
+}
+
+@media (max-width: 520px) {
+  .fab {
+    left: auto;
+    right: 24px;
+    margin-left: 0;
+  }
 }
 
 /* FORM */
