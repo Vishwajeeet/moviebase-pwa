@@ -672,3 +672,39 @@ button {
 .login-subtitle {
   margin-bottom: 32px;
 }
+
+.login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-shell {
+  width: 100%;
+  max-width: 320px;
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.login-emoji {
+  font-size: 56px;
+  margin-bottom: 16px;
+}
+
+.login-heading {
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.login-tagline {
+  color: var(--text-muted);
+  margin: 8px 0 40px;
+}
+
+.login-footer-text {
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}

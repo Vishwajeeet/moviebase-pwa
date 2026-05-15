@@ -2,85 +2,105 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
   <meta name="theme-color" content="#0d0d0d">
+
   <title>MovieBase — Login</title>
+
   <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="/css/main.css">
 </head>
-<body>
-  <div class="app-container">
-    <main class="page login-page">
-      <div class="login-content">
 
-        <div class="login-logo">🎬</div>
+<body class="login-screen">
 
-        <h1 class="page-title login-title">
-          MovieBase
-        </h1>
+  <div class="login-shell">
 
-        <p class="text-muted login-subtitle">
-          Your personal watch diary.
-        </p>
+    <div class="login-emoji">
+      🎬
+    </div>
 
-        <button
-          id="google-signin-btn"
-          class="btn btn-primary"
-        >
-          Continue with Google
-        </button>
+    <h1 class="login-heading">
+      MovieBase
+    </h1>
 
-      </div>
-    </main>
+    <p class="login-tagline">
+      Your personal watch diary.
+    </p>
+
+    <button
+      id="btn-google"
+      class="btn btn-primary"
+    >
+      Continue with Google
+    </button>
+
+    <p class="login-footer-text">
+      Private & synced across all your devices
+    </p>
+
   </div>
+
+  <div id="toast" class="toast"></div>
 
   <!-- Firebase CDN -->
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
-  <!-- App scripts -->
- <!-- App scripts -->
+  <!-- Shared scripts -->
   <script src="/js/config.js"></script>
   <script src="/js/firebase-init.js"></script>
   <script src="/js/auth.js"></script>
   <script src="/js/utils.js"></script>
   <script src="/js/firestore.js"></script>
   <script src="/js/tmdb.js"></script>
+
   <script>
-document.addEventListener(
-  'DOMContentLoaded',
-  function() {
+    AppAuth.onAuthReady(function(user) {
 
-    var signInBtn =
-      document.getElementById(
-        'google-signin-btn'
-      );
+      if (user) {
+        window.location.href = '/home.html';
+      }
 
-    if (signInBtn) {
+    });
 
-      signInBtn.addEventListener(
-        'click',
-        function() {
+    document
+      .getElementById('btn-google')
+      .addEventListener('click', function() {
 
-          AppAuth
-            .signInWithGoogle()
-            .then(function() {
-              window.location.href =
-                '/home.html';
-            })
-            .catch(function(error) {
-              console.error(error);
-              alert('Sign in failed.');
-            });
+        var btn =
+          document.getElementById('btn-google');
 
-        }
-      );
+        btn.disabled = true;
+        btn.textContent = 'Signing in...';
 
-    }
+        AppAuth
+          .signInWithGoogle()
+          .then(function() {
 
-  }
-);
+            window.location.href =
+              '/home.html';
+
+          })
+          .catch(function(err) {
+
+            console.error(err);
+
+            btn.disabled = false;
+
+            btn.textContent =
+              'Continue with Google';
+
+            AppUtils.showToast(
+              'Sign in failed. Try again.'
+            );
+
+          });
+
+      });
   </script>
 
   <!-- PWA -->
@@ -89,5 +109,6 @@ document.addEventListener(
       navigator.serviceWorker.register('/sw.js');
     }
   </script>
+
 </body>
 </html>
