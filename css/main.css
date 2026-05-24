@@ -350,30 +350,46 @@ button {
   scrollbar-width: none;
   margin-bottom: 24px;
 }
-
+.year-filters {
+  display: flex;
+  gap: 10px;
+  margin: 16px 0 24px;
+  flex-wrap: wrap;
+}
 .month-scroll::-webkit-scrollbar {
   display: none;
 }
 
-.chip {
-  padding: 8px 16px;
-  border-radius: 20px;
+.month-chip,
+.year-chip {
+
+  padding: 10px 16px;
+  border-radius: 999px;
   border: none;
   background: #1e1e1e;
   color: var(--text-muted);
   font-size: 14px;
+  font-weight: 600;
   font-family: inherit;
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
   transition: all var(--transition);
   touch-action: manipulation;
+
 }
 
-.chip.selected {
+.month-chip.selected,
+.year-chip.active {
   background: var(--accent);
   color: #000;
   font-weight: 600;
+}
+.month-chip:hover,
+.year-chip:hover {
+
+  background: #2a2a2a;
+
 }
 
 /* EMOJI RATING */

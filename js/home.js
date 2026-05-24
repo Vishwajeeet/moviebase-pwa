@@ -146,7 +146,7 @@ AppAuth.requireAuth(function(user) {
       document.createElement('button');
 
     btn.className =
-      'month-chip';
+      'year-chip';
 
     if (year === ACTIVE_YEAR) {
 
