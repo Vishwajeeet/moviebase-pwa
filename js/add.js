@@ -5,6 +5,7 @@ var state = {
   playlistId: null,
   uid: null,
   selectedMonth: null,
+  selectedYear: null,
   selectedRating: null,
   searchToken: 0,
   lastQuery: ''
@@ -24,11 +25,19 @@ AppAuth.requireAuth(function(user) {
 });
 
 function initPage() {
+
+  buildYearSelect();
+
   buildMonthChips();
+
   buildEmojiRow();
+
   setupSearch();
+
   setupToggle();
+
   setupBackButtons();
+
 }
 
 function showStep(n) {
@@ -80,6 +89,54 @@ function buildMonthChips() {
     container.appendChild(btn);
 
   });
+
+}
+function buildYearSelect() {
+
+  var select =
+    document.getElementById(
+      'year-select'
+    );
+
+  select.innerHTML = '';
+
+  var currentYear =
+    new Date().getFullYear();
+
+  for (
+    var year = currentYear;
+    year >= 2023;
+    year--
+  ) {
+
+    var option =
+      document.createElement(
+        'option'
+      );
+
+    option.value = year;
+
+    option.textContent = year;
+
+    select.appendChild(option);
+
+  }
+
+  state.selectedYear =
+    currentYear;
+
+  select.value =
+    currentYear;
+
+  select.addEventListener(
+    'change',
+    function() {
+
+      state.selectedYear =
+        parseInt(this.value);
+
+    }
+  );
 
 }
 
@@ -557,7 +614,7 @@ document.getElementById('btn-add')
         monthWatched: state.selectedMonth,
 
         yearWatched:
-          AppUtils.getCurrentYear(),
+          state.selectedYear,
 
         rating: state.selectedRating
 

@@ -392,15 +392,17 @@ function applyYearFilter() {
 
         .then(function(results) {
 
-          renderStats(
-            results[0],
-            results[1]
+          ALL_PLAYLISTS =
+            results[0];
+
+          ALL_ENTRIES =
+            results[1];
+
+          renderYearFilters(
+            ALL_ENTRIES
           );
 
-          renderPlaylists(
-            results[0],
-            results[1]
-          );
+          applyYearFilter();
 
         })
 
