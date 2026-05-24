@@ -484,6 +484,7 @@ function showStep3() {
 
   var r = state.selectedResult;
   var s = state.selectedSeason;
+  buildYearSelect();
 
   var posterUrl =
     AppUtils.getPosterUrl(
