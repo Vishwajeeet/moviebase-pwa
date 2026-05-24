@@ -82,7 +82,7 @@ AppAuth.requireAuth(function(user) {
 
     var grid =
       document.getElementById(
-        'entries-grid'
+        'entries-container'
       );
 
     grid.innerHTML = '';
@@ -103,28 +103,103 @@ AppAuth.requireAuth(function(user) {
 
   function renderEntries(entries) {
 
-    var grid =
-      document.getElementById(
-        'entries-grid'
+  var container =
+    document.getElementById(
+      'entries-container'
+    );
+
+  container.innerHTML = '';
+
+  var empty =
+    document.getElementById(
+      'empty-state'
+    );
+
+  if (entries.length === 0) {
+
+    empty.style.display = 'block';
+
+    return;
+  }
+
+  empty.style.display = 'none';
+
+  var grouped = {};
+
+  entries.forEach(function(entry) {
+
+    var month =
+      AppUtils.monthName(
+        entry.monthWatched || 1
       );
 
-    grid.innerHTML = '';
+    var year =
+      entry.yearWatched || '';
 
-    var empty =
-      document.getElementById(
-        'empty-state'
-      );
+    var key =
+      month + ' ' + year;
 
-    if (entries.length === 0) {
-
-      empty.style.display = 'block';
-
-      return;
+    if (!grouped[key]) {
+      grouped[key] = [];
     }
 
-    empty.style.display = 'none';
+    grouped[key].push(entry);
 
-    entries.forEach(function(entry) {
+  });
+
+  Object.keys(grouped).forEach(function(groupName) {
+
+    var section =
+      document.createElement('section');
+
+    section.style.marginBottom = '36px';
+
+    var header =
+      document.createElement('div');
+
+    header.style.display = 'flex';
+    header.style.justifyContent =
+      'space-between';
+    header.style.alignItems =
+      'center';
+    header.style.marginBottom =
+      '16px';
+
+    header.innerHTML = (
+
+      '<h2 style="' +
+      'font-size:20px;' +
+      'font-weight:700' +
+      '">' +
+
+      groupName +
+
+      '</h2>' +
+
+      '<span class="text-sm text-muted">' +
+
+      grouped[groupName].length +
+
+      ' title' +
+
+      (
+        grouped[groupName].length !== 1
+        ? 's'
+        : ''
+      ) +
+
+      '</span>'
+
+    );
+
+    section.appendChild(header);
+
+    var grid =
+      document.createElement('div');
+
+    grid.className = 'grid-2';
+
+    grouped[groupName].forEach(function(entry) {
 
       var card =
         document.createElement('div');
@@ -132,33 +207,46 @@ AppAuth.requireAuth(function(user) {
       card.className = 'card';
 
       var posterUrl =
-        AppUtils.getPosterUrl(entry.poster);
+        AppUtils.getPosterUrl(
+          entry.poster
+        );
 
-            var posterHTML =
+      var posterHTML =
+
         posterUrl
 
         ? '<img class="poster-img" src="' +
+
             posterUrl +
+
             '" alt="' +
+
             entry.title +
+
             '" onerror="this.style.display=\'none\'">'
 
-  : '<div class="poster-placeholder">🎬</div>';
+        : '<div class="poster-placeholder">🎬</div>';
 
       var seasonBadge =
+
         entry.type === 'series'
 
         ? '<span class="badge badge-tl">S' +
-          entry.season +
+
+            entry.season +
+
           '</span>'
 
         : '';
 
       var ratingBadge =
+
         '<span class="badge badge-tr">' +
-        AppUtils.ratingToEmoji(
-          entry.rating
-        ) +
+
+          AppUtils.ratingToEmoji(
+            entry.rating
+          ) +
+
         '</span>';
 
       card.innerHTML = (
@@ -174,7 +262,9 @@ AppAuth.requireAuth(function(user) {
           '<div class="poster-gradient"></div>' +
 
           '<p class="poster-title">' +
+
             entry.title +
+
           '</p>' +
 
         '</div>'
@@ -185,7 +275,13 @@ AppAuth.requireAuth(function(user) {
 
     });
 
-  }
+    section.appendChild(grid);
+
+    container.appendChild(section);
+
+  });
+
+}
 
   function goToAdd() {
 

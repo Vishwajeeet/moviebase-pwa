@@ -1,5 +1,7 @@
 // Home page logic
-
+var ALL_ENTRIES = [];
+var ALL_PLAYLISTS = [];
+var ACTIVE_YEAR = 'all';
 AppAuth.requireAuth(function(user) {
 
   var uid = user.uid;
@@ -20,14 +22,18 @@ AppAuth.requireAuth(function(user) {
   ])
     .then(function(results) {
 
-      var playlists = results[0];
-      var entries = results[1];
+        var playlists = results[0];
+        var entries = results[1];
 
-      renderStats(playlists, entries);
+        ALL_PLAYLISTS = playlists;
 
-      renderPlaylists(playlists, entries);
+        ALL_ENTRIES = entries;
 
-    })
+        renderYearFilters(entries);
+
+        applyYearFilter();
+
+      })
     .catch(function(err) {
 
       console.error(err);
@@ -102,6 +108,106 @@ AppAuth.requireAuth(function(user) {
       );
 
   }
+  function renderYearFilters(entries) {
+
+  var wrap =
+    document.getElementById(
+      'year-filters'
+    );
+
+  wrap.innerHTML = '';
+
+  var years = [];
+
+  entries.forEach(function(e) {
+
+    if (
+      e.yearWatched &&
+      years.indexOf(e.yearWatched) === -1
+    ) {
+
+      years.push(e.yearWatched);
+
+    }
+
+  });
+
+  years.sort(function(a, b) {
+
+    return b - a;
+
+  });
+
+  years.unshift('all');
+
+  years.forEach(function(year) {
+
+    var btn =
+      document.createElement('button');
+
+    btn.className =
+      'month-chip';
+
+    if (year === ACTIVE_YEAR) {
+
+      btn.classList.add('active');
+
+    }
+
+    btn.textContent =
+      year === 'all'
+      ? 'All'
+      : year;
+
+    btn.addEventListener(
+      'click',
+      function() {
+
+        ACTIVE_YEAR = year;
+
+        renderYearFilters(
+          ALL_ENTRIES
+        );
+
+        applyYearFilter();
+
+      }
+    );
+
+    wrap.appendChild(btn);
+
+  });
+
+}
+function applyYearFilter() {
+
+  var filteredEntries =
+    ACTIVE_YEAR === 'all'
+
+    ? ALL_ENTRIES
+
+    : ALL_ENTRIES.filter(
+        function(e) {
+
+          return (
+            e.yearWatched ==
+            ACTIVE_YEAR
+          );
+
+        }
+      );
+
+  renderStats(
+    ALL_PLAYLISTS,
+    filteredEntries
+  );
+
+  renderPlaylists(
+    ALL_PLAYLISTS,
+    filteredEntries
+  );
+
+}
 
   function renderPlaylists(playlists, entries) {
 
