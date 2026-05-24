@@ -1,5 +1,5 @@
 // Service Worker
-var CACHE = 'watchdiary-v1';
+var CACHE = 'watchdiary-v2';
 
 var SHELL = [
 
