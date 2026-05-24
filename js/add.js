@@ -67,13 +67,13 @@ function buildMonthChips() {
 
     var btn = document.createElement('button');
 
-    btn.className = 'chip';
+    btn.className = 'month-chip';
     btn.textContent = month;
     btn.dataset.month = index + 1;
 
     btn.addEventListener('click', function() {
 
-      container.querySelectorAll('.chip')
+      container.querySelectorAll('.month-chip')
         .forEach(function(c) {
           c.classList.remove('selected');
         });
@@ -515,7 +515,7 @@ function showStep3() {
   state.selectedMonth = null;
   state.selectedRating = null;
 
-  document.querySelectorAll('.chip')
+  document.querySelectorAll('.month-chip')
     .forEach(function(c) {
       c.classList.remove('selected');
     });
