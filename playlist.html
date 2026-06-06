@@ -57,6 +57,16 @@
         Tap title to rename
       </p>
 
+      <div class="toggle-pair" id="type-filter" 
+        style="margin-bottom:16px;grid-template-columns: 1fr 1fr 1fr">
+        <button class="toggle-btn active" 
+          data-filter="all">All</button>
+        <button class="toggle-btn" 
+          data-filter="movie">🎬 Movies</button>
+        <button class="toggle-btn" 
+          data-filter="series">📺 Series</button>
+      </div>
+
       <div id="entries-container"></div>
 
       <div
@@ -125,6 +135,164 @@
           id="btn-confirm-rename"
         >
           Save
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Options Bottom Sheet -->
+
+  <div
+    class="modal-overlay"
+    id="entry-options-modal"
+  >
+
+    <div class="modal-box">
+
+      <button
+        class="btn-option"
+        id="btn-edit-entry"
+      >
+        ✏️ Edit Entry
+      </button>
+
+      <button
+        class="btn-option"
+        id="btn-move-entry"
+      >
+        📂 Move to Playlist
+      </button>
+
+      <button
+        class="btn-option btn-option-danger"
+        id="btn-delete-entry"
+      >
+        🗑️ Delete Entry
+      </button>
+
+    </div>
+
+  </div>
+
+  <!-- Edit Entry Modal -->
+
+  <div
+    class="modal-overlay"
+    id="edit-entry-modal"
+  >
+
+    <div class="modal-box">
+
+      <p class="modal-title">
+        Edit Entry
+      </p>
+
+      <p class="modal-entry-title" id="edit-entry-title"></p>
+
+      <p style="font-size:12px;font-weight:600;color:var(--text-muted);margin:20px 0 12px">
+        MONTH WATCHED
+      </p>
+
+      <div
+        class="month-scroll"
+        id="edit-month-chips"
+      ></div>
+
+      <p style="font-size:12px;font-weight:600;color:var(--text-muted);margin:20px 0 12px">
+        RATING
+      </p>
+
+      <div
+        class="emoji-row"
+        id="edit-emoji-row"
+      ></div>
+
+      <div class="modal-actions">
+
+        <button
+          class="btn btn-ghost"
+          id="btn-cancel-edit"
+        >
+          Cancel
+        </button>
+
+        <button
+          class="btn btn-primary"
+          id="btn-save-edit"
+        >
+          Save Changes
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Delete Confirm Modal -->
+
+  <div
+    class="modal-overlay"
+    id="delete-confirm-modal"
+  >
+
+    <div class="modal-box">
+
+      <p class="modal-title">
+        Delete Entry?
+      </p>
+
+      <p style="color:var(--text-muted);margin-bottom:24px">
+        Are you sure? This cannot be undone.
+      </p>
+
+      <div class="modal-actions">
+
+        <button
+          class="btn btn-ghost"
+          id="btn-cancel-delete"
+        >
+          Cancel
+        </button>
+
+        <button
+          class="btn btn-danger"
+          id="btn-confirm-delete"
+        >
+          Delete
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Move to Playlist Modal -->
+
+  <div
+    class="modal-overlay"
+    id="move-to-modal"
+  >
+
+    <div class="modal-box">
+
+      <p class="modal-title">
+        Move to...
+      </p>
+
+      <div id="playlists-list"></div>
+
+      <div class="modal-actions">
+
+        <button
+          class="btn btn-ghost"
+          id="btn-cancel-move"
+        >
+          Cancel
         </button>
 
       </div>

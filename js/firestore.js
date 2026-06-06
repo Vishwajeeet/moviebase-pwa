@@ -62,6 +62,25 @@ window.AppDB = {
           return Object.assign({ id: doc.id }, doc.data());
         });
       });
+  },
+
+  deleteEntry: function(uid, entryId) {
+    return db.collection('users').doc(uid)
+      .collection('entries').doc(entryId).delete();
+  },
+
+  updateEntry: function(uid, entryId, data) {
+    return db.collection('users').doc(uid)
+      .collection('entries').doc(entryId).update(data);
+  },
+
+  moveEntry: function(uid, entryId, newPlaylistId) {
+    return db.collection('users').doc(uid)
+      .collection('entries').doc(entryId)
+      .update({
+        playlistId: newPlaylistId,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
   }
 
 };

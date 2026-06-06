@@ -63,6 +63,10 @@ function buildMonthChips() {
     'Sep','Oct','Nov','Dec'
   ];
 
+  var now = new Date();
+  var currentMonth = now.getMonth() + 1;
+  var currentYear = now.getFullYear();
+
   months.forEach(function(month, index) {
 
     var btn = document.createElement('button');
@@ -71,20 +75,31 @@ function buildMonthChips() {
     btn.textContent = month;
     btn.dataset.month = index + 1;
 
-    btn.addEventListener('click', function() {
+    var monthNumber = index + 1;
+    var isFuture = state.selectedYear === currentYear && monthNumber > currentMonth;
 
-      container.querySelectorAll('.month-chip')
-        .forEach(function(c) {
-          c.classList.remove('selected');
-        });
+    if (isFuture) {
+      btn.classList.add('chip-disabled');
+    }
 
-      btn.classList.add('selected');
+    if (!isFuture) {
 
-      state.selectedMonth = index + 1;
+      btn.addEventListener('click', function() {
 
-      checkCanAdd();
+        container.querySelectorAll('.month-chip')
+          .forEach(function(c) {
+            c.classList.remove('selected');
+          });
 
-    });
+        btn.classList.add('selected');
+
+        state.selectedMonth = index + 1;
+
+        checkCanAdd();
+
+      });
+
+    }
 
     container.appendChild(btn);
 
@@ -134,6 +149,8 @@ function buildYearSelect() {
 
       state.selectedYear =
         parseInt(this.value);
+
+      buildMonthChips();
 
     }
   );

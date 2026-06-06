@@ -84,10 +84,25 @@ AppAuth.requireAuth(function(user) {
       'stat-total'
     ).textContent = totalEntries;
 
+    var totalDays = (totalRuntime / 60 / 24);
+
+    var daysDisplay = '';
+
+    if (totalDays < 1) {
+
+      daysDisplay =
+        AppUtils.formatHours(totalRuntime);
+
+    } else {
+
+      daysDisplay =
+        totalDays.toFixed(1) + ' days';
+
+    }
+
     document.getElementById(
       'stat-hours'
-    ).textContent =
-      AppUtils.formatHours(totalRuntime);
+    ).textContent = daysDisplay;
 
     document.getElementById(
       'stat-month'

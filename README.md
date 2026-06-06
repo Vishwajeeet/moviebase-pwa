@@ -12,7 +12,7 @@ A personal movie and web series tracking Progressive Web App (PWA). Built to log
 - For series, pick a specific season with its own poster
 - Rate everything with a 5-emoji scale (😭 🙁 😐 😊 🤩)
 - Organize your watches into named playlists
-- Filter and view stats by year and month
+- Filter, sort, and view stats by year and month
 - Generate a downloadable Wrapped card with your top stats
 - Install directly from Chrome as a native-like app (PWA)
 - Fully synced across all your devices via Firebase
@@ -42,21 +42,29 @@ No frameworks. No npm. No build step. Pure static files.
 - Search movies and TV series with live TMDB results
 - Season-level tracking for series (separate entry per season)
 - Emoji rating system: 😭 🙁 😐 😊 🤩
-- Month tagging for every entry
+- Month tagging for every entry — future months are blocked
 
 **Organization**
 - Create and rename playlists (e.g. "2026", "Horror Run", "Rewatches")
 - Grid view with posters inside each playlist
 - Mini poster collage preview on playlist cards
+- Filter entries by type: All / 🎬 Movies / 📺 Series
+- Sort entries by: Date Added, Rating, Month Watched, Type
+- Move any entry to a different playlist
+- Delete an entry or edit its rating and month after adding
+- Tap any poster to see full entry details (title, rating, runtime, genre, month)
 
 **Stats**
-- Total titles watched and total hours consumed
+- Total titles watched and total days consumed
 - Movies vs series breakdown
 - Top genre (computed silently from TMDB data)
 - Most active month
 - Longest single watch
+- Average rating
+- Watch streak — longest consecutive months with at least one entry
 - Your 🤩 picks (top rated entries)
-- Fun facts computed from your data
+- Fun facts and Deep Cuts computed from your data
+- Deep Cuts: personality insights (movie person vs binger, tough critic vs generous rater, completion rate, etc.)
 
 **Wrapped Card**
 - Generates a 1080×1920 downloadable image
@@ -221,7 +229,6 @@ This app will never hit Firebase's free tier limits.
 
 ### Add Movie / Series
 ![Add Entry](screenshots/add.png)
-
 
 ---
 
