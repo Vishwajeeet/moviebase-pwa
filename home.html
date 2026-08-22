@@ -33,8 +33,12 @@
             📊
           </button>
 
-          <button class="icon-btn" id="btn-signout" title="Sign out">
-            ⏻
+          <button class="icon-btn" id="btn-signout" title="Sign out" style="color:#ff4d4d">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+              <line x1="12" y1="2" x2="12" y2="12"></line>
+            </svg>
           </button>
 
         </div>
@@ -66,7 +70,7 @@
             —
           </div>
 
-          <div class="stat-label">
+          <div class="stat-label" id="stat-hours-label">
             Hours
           </div>
         </div>
@@ -86,8 +90,8 @@
             —
           </div>
 
-          <div class="stat-label">
-            Films · Series · Games
+          <div class="stat-label" id="stat-type-label">
+            Movies · Series
           </div>
         </div>
 
@@ -145,10 +149,21 @@
   <button class="fab" id="fab-create">
     <span>+</span> Create Playlist
   </button>
-    <div class="modal-overlay" id="playlist-options-modal">
+  <button class="fab" id="fab-add-game" style="display:none">
+    <span>+</span> Add Entry
+  </button>
+  <!--
+    NOTE: manual game-playlist creation is disabled since the 4 game
+    playlists (Currently Playing / Completed / Dropped / Wishlist) now
+    auto-create themselves based on status when adding an entry.
+    fab-create is kept in the DOM (just hidden on the Games tab) so this
+    can be re-enabled later if needed — see js/home.js.
+  -->
+  <div class="modal-overlay" id="playlist-options-modal">
     <div class="modal-box">
       <p class="modal-title">Playlist Options</p>
-      <input class="input-field" id="rename-input" placeholder="Playlist name" maxlength="40" style="margin-bottom:12px">
+      <input class="input-field" id="rename-input" placeholder="Playlist name" maxlength="40"
+        style="margin-bottom:12px">
       <button class="btn btn-ghost" id="btn-change-cover" style="margin-bottom:8px">🖼 Change Cover Image</button>
       <input type="file" id="cover-file-input" accept="image/*" style="display:none">
       <button class="btn btn-primary" id="btn-save-rename" style="margin-bottom:8px">Save Name</button>
@@ -160,7 +175,8 @@
   <div class="modal-overlay" id="delete-playlist-confirm">
     <div class="modal-box">
       <p class="modal-title">Delete this playlist?</p>
-      <p style="color:var(--text-muted);margin-bottom:24px">All entries inside it will also be deleted. This can't be undone.</p>
+      <p style="color:var(--text-muted);margin-bottom:24px">All entries inside it will also be deleted. This can't be
+        undone.</p>
       <div class="modal-actions">
         <button class="btn btn-ghost" id="btn-cancel-delete-playlist">Cancel</button>
         <button class="btn btn-danger" id="btn-confirm-delete-playlist">Delete</button>

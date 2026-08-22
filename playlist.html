@@ -35,18 +35,33 @@
 
       </header>
 
+      <button id="btn-share-playlist" class="btn btn-ghost"
+        style="margin-bottom:16px;font-size:13px;padding:8px 14px;width:auto">
+        ↗ Share Playlist
+      </button>
+
       <p class="text-sm text-muted" style="margin-bottom:16px">
         Tap title to rename
       </p>
 
-      <div class="toggle-pair" id="type-filter" style="margin-bottom:16px;grid-template-columns: 1fr 1fr 1fr 1fr">
-        <button class="toggle-btn active" data-filter="all">All</button>
-        <button class="toggle-btn" data-filter="movie">🎬</button>
-        <button class="toggle-btn" data-filter="series">📺</button>
-        <button class="toggle-btn" data-filter="game">🎮</button>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px">
+        <div class="toggle-pair" id="type-filter" style="grid-template-columns: 1fr 1fr 1fr 1fr;flex:1;margin-bottom:0">
+          <button class="toggle-btn active" data-filter="all">All</button>
+          <button class="toggle-btn" data-filter="movie">🎬</button>
+          <button class="toggle-btn" data-filter="series">📺</button>
+          <button class="toggle-btn" data-filter="game">🎮</button>
+        </div>
+        <button id="btn-layout-toggle" class="icon-btn" title="Toggle layout" style="flex-shrink:0">▦</button>
       </div>
 
-      <div id="entries-container"></div>
+      <div id="entries-container">
+        <div class="grid-2">
+          <div class="skeleton skeleton-card"></div>
+          <div class="skeleton skeleton-card"></div>
+          <div class="skeleton skeleton-card"></div>
+          <div class="skeleton skeleton-card"></div>
+        </div>
+      </div>
 
       <div id="empty-state" class="empty-state" style="display:none">
 
@@ -68,10 +83,10 @@
 
   </div>
 
-    <button class="fab" id="fab-add">
+  <button class="fab" id="fab-add">
     <span>+</span> Add Entry
   </button>
-    
+
 
   <div class="modal-overlay" id="rename-modal">
 
@@ -149,6 +164,13 @@
 
       <div class="emoji-row" id="edit-emoji-row"></div>
 
+      <div id="edit-playtime-wrap" style="display:none">
+        <p style="font-size:12px;font-weight:600;color:var(--text-muted);margin:20px 0 12px">
+          HOURS PLAYED
+        </p>
+        <input type="number" id="edit-playtime-input" class="input-field" placeholder="e.g. 24" min="0">
+      </div>
+
       <div class="modal-actions">
 
         <button class="btn btn-ghost" id="btn-cancel-edit">
@@ -218,54 +240,64 @@
     </div>
 
   </div>
-  <!-- Share Card Modal -->
-  <div class="modal-overlay" id="share-modal">
+  <div class="modal-overlay" id="share-playlist-modal">
     <div class="modal-box">
-      <p class="modal-title">Share Entry</p>
-      <div id="share-canvas-wrap" style="margin-bottom:16px;border-radius:12px;overflow:hidden"></div>
+      <p class="modal-title">Share Playlist</p>
+      <div id="share-playlist-canvas-wrap" style="margin:16px 0"></div>
       <div class="modal-actions">
-        <button class="btn btn-ghost" id="btn-close-share">Close</button>
-        <button class="btn btn-primary" id="btn-download-share">⬇ Download</button>
+        <button class="btn btn-ghost" id="btn-close-share-playlist">Close</button>
+        <button class="btn btn-primary" id="btn-download-playlist">↓ Download</button>
       </div>
     </div>
   </div>
-
-  <!-- Logout Confirm Modal -->
-  <div class="modal-overlay" id="logout-modal">
-    <div class="modal-box">
-      <p class="modal-title">Sign out?</p>
-      <p style="color:var(--text-muted);margin-bottom:24px">You'll need to sign in again to access your data.</p>
-      <div class="modal-actions">
-        <button class="btn btn-ghost" id="btn-cancel-logout">Cancel</button>
-        <button class="btn btn-danger" id="btn-confirm-logout">Sign Out</button>
+    <!-- Share Card Modal -->
+    <div class="modal-overlay" id="share-modal">
+      <div class="modal-box">
+        <p class="modal-title">Share Entry</p>
+        <div id="share-canvas-wrap" style="margin-bottom:16px;border-radius:12px;overflow:hidden"></div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" id="btn-close-share">Close</button>
+          <button class="btn btn-primary" id="btn-download-share">⬇ Download</button>
+        </div>
       </div>
     </div>
-  </div>
-  <div id="toast" class="toast"></div>
 
-  <!-- Firebase CDN -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <!-- Logout Confirm Modal -->
+    <div class="modal-overlay" id="logout-modal">
+      <div class="modal-box">
+        <p class="modal-title">Sign out?</p>
+        <p style="color:var(--text-muted);margin-bottom:24px">You'll need to sign in again to access your data.</p>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" id="btn-cancel-logout">Cancel</button>
+          <button class="btn btn-danger" id="btn-confirm-logout">Sign Out</button>
+        </div>
+      </div>
+    </div>
+    <div id="toast" class="toast"></div>
 
-  <!-- Shared scripts -->
-  <script src="/js/config.js"></script>
-  <script src="/js/firebase-init.js"></script>
-  <script src="/js/auth.js"></script>
-  <script src="/js/utils.js"></script>
-  <script src="/js/firestore.js"></script>
-  <script src="/js/tmdb.js"></script>
-  <script src="/js/rawg.js"></script>
+    <!-- Firebase CDN -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
-  <!-- Page script -->
-  <script src="/js/playlist.js"></script>
+    <!-- Shared scripts -->
+    <script src="/js/config.js"></script>
+    <script src="/js/firebase-init.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/utils.js"></script>
+    <script src="/js/firestore.js"></script>
+    <script src="/js/tmdb.js"></script>
+    <script src="/js/rawg.js"></script>
 
-  <!-- PWA -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js');
-    }
-  </script>
+    <!-- Page script -->
+    <script src="/js/playlist.js"></script>
+
+    <!-- PWA -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js');
+      }
+    </script>
 
 </body>
 

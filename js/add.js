@@ -36,10 +36,14 @@ function findDuplicate(r, seasonNum) {
 }
 
 function initPage() {
-  db.collection('users').doc(state.uid)
-    .collection('playlists').doc(state.playlistId)
-    .get().then(function(doc) {
-      var playlistType = (doc.exists && doc.data().type) || 'media';
+  var forcedType = new URLSearchParams(window.location.search).get('type');
+  var typePromise = forcedType
+    ? Promise.resolve(forcedType)
+    : db.collection('users').doc(state.uid)
+        .collection('playlists').doc(state.playlistId)
+        .get().then(function(doc) { return (doc.exists && doc.data().type) || 'media'; });
+
+  typePromise.then(function(playlistType) {
       state.type = playlistType === 'game' ? 'game' : 'movie';
       document.getElementById('step1-heading').textContent = state.type === 'game' ? 'What did you play?' : 'What did you watch?';
 
@@ -48,6 +52,11 @@ function initPage() {
         btn.style.display = (playlistType === 'game') === isGameTab ? '' : 'none';
         btn.classList.toggle('active', btn.dataset.type === state.type);
       });
+
+      // Games only ever offer one tab (Game) — no point showing a tab bar
+      // to switch between options that don't exist. Hide it entirely.
+      var tabsWrap = document.querySelector('.media-type-tabs');
+      if (tabsWrap) tabsWrap.style.display = playlistType === 'game' ? 'none' : 'flex';
     });
 
   buildYearSelect('year-select', 'selectedYear');
@@ -89,7 +98,7 @@ function buildYearSelect(elId, stateKey) {
   if (!select) return;
   select.innerHTML = '';
   var currentYear = new Date().getFullYear();
-  for (var y = currentYear; y >= 2020; y--) {
+  for (var y = currentYear; y >= 2015; y--) {
     var opt = document.createElement('option');
     opt.value = y;
     opt.textContent = y;

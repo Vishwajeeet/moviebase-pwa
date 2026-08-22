@@ -5,15 +5,30 @@ AppAuth.requireAuth(function(user) {
 
   var allEntries = [];
 
-  var currentYear = AppUtils.getCurrentYear();
+  var currentYear = 'all';
 
   var currentMonth = 0;
+
+  var statsTab = 'media';
+
+  document.getElementById('stats-type-pills').addEventListener('click', function(e) {
+    var btn = e.target.closest('.type-pill');
+    if (!btn) return;
+    document.querySelectorAll('#stats-type-pills .type-pill').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    statsTab = btn.dataset.tab === 'games' ? 'games' : 'media';
+    render();
+  });
 
   // BACK BUTTON
 
   document.getElementById('btn-back')
     .addEventListener('click', function() {
-      window.location.href = '/home.html';
+      if (document.referrer && document.referrer.indexOf(window.location.origin) === 0) {
+        window.history.back();
+      } else {
+        window.location.href = '/home.html';
+      }
     });
 
   // LOAD ENTRIES
@@ -64,17 +79,12 @@ AppAuth.requireAuth(function(user) {
         return b - a;
       });
 
-    if (
-      sortedYears.indexOf(
-        String(currentYear)
-      ) === -1
-    ) {
-      sortedYears.unshift(
-        String(currentYear)
-      );
-    }
-
     select.innerHTML = '';
+
+    var allOption = document.createElement('option');
+    allOption.value = 'all';
+    allOption.textContent = 'All Years';
+    select.appendChild(allOption);
 
     sortedYears.forEach(function(year) {
 
@@ -96,7 +106,7 @@ AppAuth.requireAuth(function(user) {
       function() {
 
         currentYear =
-          Number(select.value);
+          select.value === 'all' ? 'all' : Number(select.value);
 
         render();
 
@@ -153,14 +163,19 @@ AppAuth.requireAuth(function(user) {
     return allEntries.filter(
       function(entry) {
 
+        var typeMatch =
+          statsTab === 'games'
+            ? entry.type === 'game'
+            : entry.type !== 'game';
+
         var yearMatch =
-          entry.yearWatched === currentYear;
+          currentYear === 'all' || entry.yearWatched === currentYear;
 
         var monthMatch =
           currentMonth === 0
           || entry.monthWatched === currentMonth;
 
-        return yearMatch && monthMatch;
+        return typeMatch && yearMatch && monthMatch;
 
       }
     );
@@ -181,6 +196,13 @@ AppAuth.requireAuth(function(user) {
   renderFunFacts(entries);
 
   renderDeepCuts(entries);
+
+  document.getElementById('playtime-leaderboard').parentElement
+    ? null : null; // no-op, keeping structure
+
+  var leaderboardHeading = document.querySelector('#playtime-leaderboard').previousElementSibling;
+  if (leaderboardHeading) leaderboardHeading.style.display = statsTab === 'games' ? '' : 'none';
+  document.getElementById('playtime-leaderboard').style.display = statsTab === 'games' ? '' : 'none';
 
   renderPlaytimeLeaderboard(entries);
 

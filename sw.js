@@ -126,9 +126,10 @@ self.addEventListener(
         fetch(e.request)
           .catch(function() {
 
-            return caches.match(
-              e.request
-            );
+            return caches.match(e.request, { ignoreSearch: true })
+              .then(function(cached) {
+                return cached || Response.error();
+              });
 
           })
 
@@ -147,7 +148,10 @@ self.addEventListener(
             return res;
           })
           .catch(function() {
-            return caches.match(e.request);
+            return caches.match(e.request, { ignoreSearch: true })
+              .then(function(cached) {
+                return cached || caches.match('/home.html');
+              });
           })
 
       );

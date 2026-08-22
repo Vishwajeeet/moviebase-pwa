@@ -163,6 +163,13 @@ AppAuth.requireAuth(function (user) {
     });
 
   }
+  document.getElementById('btn-layout-toggle').addEventListener('click', function () {
+    layoutMode = layoutMode === 'flat' ? 'grouped' : 'flat';
+    localStorage.setItem('mb-layout', layoutMode);
+    this.textContent = layoutMode === 'flat' ? '▦' : '☰';
+    renderEntries(getFilteredEntries());
+  });
+  document.getElementById('btn-layout-toggle').textContent = layoutMode === 'flat' ? '▦' : '☰';
 
   function setupFilterListeners() {
 
@@ -190,6 +197,62 @@ AppAuth.requireAuth(function (user) {
 
     });
 
+  }
+
+  var layoutMode = localStorage.getItem('mb-layout') || 'flat';
+
+  function buildEntryCard(entry) {
+    var card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.entryId = entry.id;
+
+    var posterUrl = AppUtils.getPosterUrl(entry.poster);
+    var posterHTML = posterUrl
+      ? '<img class="poster-img" loading="lazy" src="' + posterUrl + '" alt="' + entry.title + '" onerror="this.style.display=\'none\'">'
+      : '<div class="poster-placeholder">' + (entry.type === 'game' ? '🎮' : '🎬') + '</div>';
+
+    var seasonBadge = '';
+    if (entry.type === 'series') {
+      seasonBadge = '<span class="badge badge-tl">S' + entry.season + '</span>';
+    } else if (entry.type === 'game') {
+      var statusColors = { completed: '#22c55e', playing: '#f59e0b', dropped: '#ef4444', wishlist: '#6366f1' };
+      var statusLabels = { completed: '✅', playing: '🕹️', dropped: '❌', wishlist: '🔖' };
+      var st = entry.completionStatus || 'wishlist';
+      seasonBadge = '<span class="badge badge-tl" style="background:' + (statusColors[st] || '#6366f1') + ';color:#000">' + (statusLabels[st] || '🎮') + '</span>';
+    }
+
+    var ratingBadge = '';
+    if (entry.type === 'game') {
+      ratingBadge = entry.gameRating
+        ? '<span class="badge badge-tr badge-rating-big" style="background:var(--accent-game);color:#fff">' + entry.gameRating + '</span>'
+        : '';
+    } else {
+      ratingBadge = entry.rating
+        ? '<span class="badge badge-tr">' + AppUtils.ratingToEmoji(entry.rating) + '</span>'
+        : '';
+    }
+
+    card.innerHTML = (
+      '<div class="poster-wrap">' +
+      posterHTML +
+      seasonBadge +
+      ratingBadge +
+      '<div class="poster-gradient"></div>' +
+      '<button class="btn-menu-entry" data-entry-id="' + entry.id + '">⋮</button>' +
+      '<p class="poster-title">' + entry.title + '</p>' +
+      '</div>'
+    );
+
+    card.querySelector('.btn-menu-entry').addEventListener('click', function (e) {
+      e.stopPropagation();
+      openEntryOptions(entry);
+    });
+
+    card.addEventListener('click', function () {
+      window.location.href = '/entry.html?id=' + entry.id;
+    });
+
+    return card;
   }
 
   function renderEntries(entries) {
@@ -235,6 +298,16 @@ AppAuth.requireAuth(function (user) {
     }
 
     empty.style.display = 'none';
+
+    if (layoutMode === 'flat') {
+      var grid = document.createElement('div');
+      grid.className = 'grid-2';
+      entries.forEach(function (entry) {
+        grid.appendChild(buildEntryCard(entry));
+      });
+      container.appendChild(grid);
+      return;
+    }
 
     var grouped = {};
 
@@ -312,94 +385,7 @@ AppAuth.requireAuth(function (user) {
       grid.className = 'grid-2';
 
       grouped[groupName].forEach(function (entry) {
-
-        var card =
-          document.createElement('div');
-
-        card.className = 'card';
-
-        card.dataset.entryId = entry.id;
-
-        var posterUrl =
-          AppUtils.getPosterUrl(
-            entry.poster
-          );
-
-        var posterHTML =
-
-          posterUrl
-
-            ? '<img class="poster-img" src="' +
-
-            posterUrl +
-
-            '" alt="' +
-
-            entry.title +
-
-            '" onerror="this.style.display=\'none\'">'
-
-            : '<div class="poster-placeholder">' + (entry.type === 'game' ? '🎮' : '🎬') + '</div>';
-
-        var seasonBadge = '';
-        if (entry.type === 'series') {
-          seasonBadge = '<span class="badge badge-tl">S' + entry.season + '</span>';
-        } else if (entry.type === 'game') {
-          var statusColors = { completed: '#22c55e', playing: '#f59e0b', dropped: '#ef4444', wishlist: '#6366f1' };
-          var statusLabels = { completed: '✅', playing: '🕹️', dropped: '❌', wishlist: '🔖' };
-          var st = entry.completionStatus || 'wishlist';
-          seasonBadge = '<span class="badge badge-tl" style="background:' + (statusColors[st] || '#6366f1') + ';color:#000">' + (statusLabels[st] || '🎮') + '</span>';
-        }
-
-        var ratingBadge = '';
-        if (entry.type === 'game') {
-          ratingBadge = entry.gameRating
-            ? '<span class="badge badge-tr badge-rating-big" style="background:var(--accent-game);color:#fff">' + entry.gameRating + '</span>'
-            : '';
-        } else {
-          ratingBadge = entry.rating
-            ? '<span class="badge badge-tr">' + AppUtils.ratingToEmoji(entry.rating) + '</span>'
-            : '';
-        }
-
-        card.innerHTML = (
-
-          '<div class="poster-wrap">' +
-
-          posterHTML +
-
-          seasonBadge +
-
-          ratingBadge +
-
-          '<div class="poster-gradient"></div>' +
-
-          '<button class="btn-menu-entry" data-entry-id="' + entry.id + '">⋮</button>' +
-
-          '<p class="poster-title">' +
-
-          entry.title +
-
-          '</p>' +
-
-          '</div>'
-
-        );
-
-        card.querySelector('.btn-menu-entry').addEventListener('click', function (e) {
-
-          e.stopPropagation();
-
-          openEntryOptions(entry);
-
-        });
-
-        card.addEventListener('click', function () {
-          window.location.href = '/entry.html?id=' + entry.id;
-        });
-
-        grid.appendChild(card);
-
+        grid.appendChild(buildEntryCard(entry));
       });
 
       section.appendChild(grid);
@@ -461,6 +447,14 @@ AppAuth.requireAuth(function (user) {
     buildEditEmojiRow(
       entry.rating
     );
+
+    var ptWrap = document.getElementById('edit-playtime-wrap');
+    if (entry.type === 'game') {
+      ptWrap.style.display = 'block';
+      document.getElementById('edit-playtime-input').value = entry.playtime || '';
+    } else {
+      ptWrap.style.display = 'none';
+    }
 
     document.getElementById(
       'edit-entry-modal'
@@ -567,6 +561,11 @@ AppAuth.requireAuth(function (user) {
       monthWatched: currentEditEntry.monthWatched,
       rating: currentEditEntry.rating
     };
+
+    if (currentEditEntry.type === 'game') {
+      var pt = parseInt(document.getElementById('edit-playtime-input').value);
+      updateData.playtime = isNaN(pt) ? null : pt;
+    }
 
     AppDB.updateEntry(
       uid,
@@ -874,6 +873,119 @@ AppAuth.requireAuth(function (user) {
     }
 
   });
+  document.getElementById('btn-share-playlist').addEventListener('click', function () {
+    generatePlaylistShareCard(allEntries, currentName);
+  });
+
+  document.getElementById('btn-close-share-playlist').addEventListener('click', function () {
+    document.getElementById('share-playlist-modal').classList.remove('open');
+  });
+
+  var playlistShareCanvas = null;
+
+  document.getElementById('btn-download-playlist').addEventListener('click', function () {
+    if (!playlistShareCanvas) return;
+    playlistShareCanvas.toBlob(function (blob) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'playlist-share.png';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  });
+
+  function generatePlaylistShareCard(entries, playlistName) {
+    if (!entries.length) {
+      AppUtils.showToast('No entries to share.');
+      return;
+    }
+
+    var n = entries.length;
+    var cols = n <= 4 ? 2 : n <= 9 ? 3 : n <= 16 ? 4 : n <= 25 ? 5 : 6;
+    var rows = Math.ceil(n / cols);
+
+    var pad = 40, gap = 16, headerH = 140, footerH = 60;
+    var tileW = 200;
+    var tileH = tileW * 1.5;
+    var canvasW = pad * 2 + cols * tileW + (cols - 1) * gap;
+    var canvasH = headerH + pad + rows * tileH + (rows - 1) * gap + pad + footerH;
+
+    var canvas = document.createElement('canvas');
+    canvas.width = canvasW;
+    canvas.height = canvasH;
+    var ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#0d0d0d';
+    ctx.fillRect(0, 0, canvasW, canvasH);
+    ctx.fillStyle = '#c9a84c';
+    ctx.fillRect(0, 0, canvasW, 6);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 44px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(playlistName, pad, 90);
+    ctx.font = '500 24px Inter, sans-serif';
+    ctx.fillStyle = '#999999';
+    ctx.fillText(n + ' title' + (n !== 1 ? 's' : ''), pad, 125);
+
+    var loaded = 0;
+    entries.forEach(function (entry, i) {
+      var col = i % cols, row = Math.floor(i / cols);
+      var x = pad + col * (tileW + gap);
+      var y = headerH + pad + row * (tileH + gap);
+
+      function drawPlaceholder() {
+        ctx.fillStyle = '#1a1a1a';
+        AppUtils.roundRectPath(ctx, x, y, tileW, tileH, 10);
+        ctx.fill();
+        ctx.font = '48px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#444';
+        ctx.fillText(entry.type === 'game' ? '🎮' : '🎬', x + tileW / 2, y + tileH / 2 + 16);
+        ctx.textAlign = 'left';
+        finish();
+      }
+
+      function finish() {
+        loaded++;
+        if (loaded === entries.length) finalizeCard();
+      }
+
+      var posterUrl = AppUtils.getPosterUrl(entry.poster);
+      if (!posterUrl) { drawPlaceholder(); return; }
+
+      var img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function () {
+        ctx.save();
+        AppUtils.roundRectPath(ctx, x, y, tileW, tileH, 10);
+        ctx.clip();
+        var scale = Math.max(tileW / img.width, tileH / img.height);
+        var dw = img.width * scale, dh = img.height * scale;
+        ctx.drawImage(img, x + (tileW - dw) / 2, y + (tileH - dh) / 2, dw, dh);
+        ctx.restore();
+        finish();
+      };
+      img.onerror = drawPlaceholder;
+      img.src = AppUtils.getCanvasSafeUrl(posterUrl);
+    });
+
+    function finalizeCard() {
+      ctx.fillStyle = '#666666';
+      ctx.font = '500 22px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Logged on MediaBase', canvasW / 2, canvasH - 24);
+
+      canvas.style.width = '100%';
+      canvas.style.borderRadius = '8px';
+      playlistShareCanvas = canvas;
+      var wrap = document.getElementById('share-playlist-canvas-wrap');
+      wrap.innerHTML = '';
+      wrap.appendChild(canvas);
+      document.getElementById('share-playlist-modal').classList.add('open');
+    }
+  }
   document.getElementById('btn-share-entry').addEventListener('click', function () {
     if (currentEditEntry) {
       document.getElementById('entry-options-modal').classList.remove('open');
@@ -904,40 +1016,55 @@ AppAuth.requireAuth(function (user) {
     canvas.height = 1080;
     var ctx = canvas.getContext('2d');
     var isGame = entry.type === 'game';
+    var accent = isGame ? '#7c3aed' : '#c9a84c';
 
-    ctx.fillStyle = '#0d0d0d';
-    ctx.fillRect(0, 0, 1080, 1080);
+    function drawEverything(img) {
+      // BACKGROUND
+      ctx.fillStyle = '#0d0d0d';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Accent strip
-    ctx.fillStyle = isGame ? '#7c3aed' : '#c9a84c';
-    ctx.fillRect(0, 0, 1080, 8);
+      if (img) {
+        var scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+        var dw = img.width * scale, dh = img.height * scale;
+        ctx.drawImage(img, (canvas.width - dw) / 2, (canvas.height - dh) / 2, dw, dh);
+      }
 
-    function drawText() {
-      // Title
-      ctx.fillStyle = '#f0f0f0';
-      ctx.font = 'bold 64px Inter, sans-serif';
+      // DARK GRADIENT so text stays readable
+      var grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      grad.addColorStop(0, 'rgba(10,10,10,0.25)');
+      grad.addColorStop(0.55, 'rgba(10,10,10,0.55)');
+      grad.addColorStop(1, 'rgba(8,8,8,0.96)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Accent strip top
+      ctx.fillStyle = accent;
+      ctx.fillRect(0, 0, canvas.width, 8);
+
       ctx.textAlign = 'left';
-      var title = entry.title;
-      if (title.length > 24) title = title.slice(0, 22) + '…';
-      ctx.fillText(title, 80, 200);
+
+      // Title (wraps to 2 lines max)
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 62px Inter, sans-serif';
+      wrapText(entry.title, 70, 760, 940, 68, 2);
 
       // Type badge
-      ctx.font = '500 28px Inter, sans-serif';
-      ctx.fillStyle = isGame ? '#7c3aed' : '#c9a84c';
+      ctx.font = '600 30px Inter, sans-serif';
+      ctx.fillStyle = accent;
       var typeLabel = isGame ? '🎮 Game' : entry.type === 'series' ? '📺 ' + (entry.seasonName || 'Series') : '🎬 Movie';
-      ctx.fillText(typeLabel, 80, 250);
+      ctx.fillText(typeLabel, 70, 830);
 
-      // Rating
-      ctx.font = 'bold 80px Inter, sans-serif';
-      ctx.fillStyle = isGame ? '#7c3aed' : '#c9a84c';
+      // Rating — big
+      ctx.font = 'bold 84px Inter, sans-serif';
+      ctx.fillStyle = accent;
       var ratingText = '';
       if (isGame && entry.gameRating) ratingText = entry.gameRating + '/10';
       else if (!isGame && entry.rating) ratingText = AppUtils.ratingToEmoji(entry.rating);
-      if (ratingText) ctx.fillText(ratingText, 80, 380);
+      if (ratingText) ctx.fillText(ratingText, 70, 935);
 
-      // Month / status
-      ctx.font = '500 30px Inter, sans-serif';
-      ctx.fillStyle = '#888888';
+      // Meta line
+      ctx.font = '500 32px Inter, sans-serif';
+      ctx.fillStyle = '#dddddd';
       var meta = '';
       if (isGame && entry.completionStatus) {
         var stLabels = { completed: 'Completed', playing: 'Playing', dropped: 'Dropped', wishlist: 'Wishlist' };
@@ -946,32 +1073,13 @@ AppAuth.requireAuth(function (user) {
       } else if (entry.monthWatched) {
         meta = AppUtils.monthName(entry.monthWatched) + ' ' + (entry.yearWatched || '');
       }
-      if (meta) ctx.fillText(meta, 80, 440);
+      if (meta) ctx.fillText(meta, 70, 985);
 
-      // Review
-      if (entry.review) {
-        ctx.font = 'italic 26px Inter, sans-serif';
-        ctx.fillStyle = '#aaaaaa';
-        var review = entry.review.length > 80 ? entry.review.slice(0, 78) + '…' : entry.review;
-        ctx.fillText('"' + review + '"', 80, 520);
-      }
+      // Footer branding
+      ctx.font = '500 26px Inter, sans-serif';
+      ctx.fillStyle = '#999999';
+      ctx.fillText('Logged on MediaBase', 70, 1040);
 
-      // Category (games)
-      if (isGame && entry.category) {
-        ctx.font = '500 24px Inter, sans-serif';
-        ctx.fillStyle = '#555555';
-        ctx.fillText(entry.category, 80, 570);
-      }
-
-      // Branding
-      ctx.fillStyle = '#333333';
-      ctx.fillRect(0, 1040, 1080, 1);
-      ctx.font = '500 24px Inter, sans-serif';
-      ctx.fillStyle = '#555555';
-      ctx.textAlign = 'center';
-      ctx.fillText('Logged on MediaBase', 540, 1070);
-
-      // Show modal
       canvas.style.width = '100%';
       canvas.style.borderRadius = '8px';
       shareCanvas = canvas;
@@ -981,253 +1089,258 @@ AppAuth.requireAuth(function (user) {
       document.getElementById('share-modal').classList.add('open');
     }
 
+    function wrapText(text, x, yBottom, maxWidth, lineHeight, maxLines) {
+      var words = text.split(' ');
+      var lines = [];
+      var current = '';
+      for (var i = 0; i < words.length; i++) {
+        var test = current ? current + ' ' + words[i] : words[i];
+        if (ctx.measureText(test).width > maxWidth && current) {
+          lines.push(current);
+          current = words[i];
+        } else {
+          current = test;
+        }
+      }
+      if (current) lines.push(current);
+      if (lines.length > maxLines) {
+        lines = lines.slice(0, maxLines);
+        lines[maxLines - 1] = lines[maxLines - 1].replace(/\s*\S*$/, '') + '…';
+      }
+      var startY = yBottom - (lines.length - 1) * lineHeight;
+      lines.forEach(function (line, i) {
+        ctx.fillText(line, x, startY + i * lineHeight);
+      });
+    }
+
     var posterUrl = AppUtils.getPosterUrl(entry.poster);
     if (posterUrl) {
       var img = new Image();
       img.crossOrigin = 'anonymous';
+      img.onload = function () { drawEverything(img); };
+      img.onerror = function () { drawEverything(null); };
       img.src = AppUtils.getCanvasSafeUrl(posterUrl);
-      img.onload = function () {
-        // Draw poster right side
-        ctx.save();
-        ctx.beginPath();
-        roundRectPath(ctx, 640, 60, 360, isGame ? 480 : 540, 16);
-        ctx.clip();
-        ctx.drawImage(img, 640, 60, 360, isGame ? 480 : 540);
-        ctx.restore();
-        drawText();
-      };
-      img.onerror = drawText;
     } else {
-      drawText();
+      drawEverything(null);
     }
   }
 
-  function roundRectPath(ctx, x, y, w, h, r) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath();
-  }
   document.getElementById(
     'btn-move-entry'
   ).addEventListener('click', function () {
 
-    if (currentEditEntry) {
-      openMoveToModal(currentEditEntry);
-    }
+  if (currentEditEntry) {
+    openMoveToModal(currentEditEntry);
+  }
 
-  });
-    document.getElementById('share-modal').addEventListener('click', function(e) {
-    if (e.target === this) this.classList.remove('open');
-  });
-  document.getElementById(
-    'btn-cancel-edit'
-  ).addEventListener('click', function () {
-
-    document.getElementById(
-      'edit-entry-modal'
-    ).classList.remove('open');
-
-  });
-
-  document.getElementById(
-    'btn-save-edit'
-  ).addEventListener('click', function () {
-
-    saveEditEntry();
-
-  });
-
-  document.getElementById(
-    'btn-cancel-delete'
-  ).addEventListener('click', function () {
-
-    document.getElementById(
-      'delete-confirm-modal'
-    ).classList.remove('open');
-
-  });
-
-  document.getElementById(
-    'btn-confirm-delete'
-  ).addEventListener('click', function () {
-
-    deleteCurrentEntry();
-
-  });
-
-  document.getElementById(
-    'btn-cancel-move'
-  ).addEventListener('click', function () {
-
-    document.getElementById(
-      'move-to-modal'
-    ).classList.remove('open');
-
-  });
-
-  // Close modals when clicking overlay
-
-  document.getElementById(
-    'entry-options-modal'
-  ).addEventListener('click', function (e) {
-
-    if (e.target === this) {
-
-      this.classList.remove('open');
-
-    }
-
-  });
+});
+document.getElementById('share-modal').addEventListener('click', function (e) {
+  if (e.target === this) this.classList.remove('open');
+});
+document.getElementById(
+  'btn-cancel-edit'
+).addEventListener('click', function () {
 
   document.getElementById(
     'edit-entry-modal'
-  ).addEventListener('click', function (e) {
+  ).classList.remove('open');
 
-    if (e.target === this) {
+});
 
-      this.classList.remove('open');
+document.getElementById(
+  'btn-save-edit'
+).addEventListener('click', function () {
 
-    }
+  saveEditEntry();
 
-  });
+});
+
+document.getElementById(
+  'btn-cancel-delete'
+).addEventListener('click', function () {
 
   document.getElementById(
     'delete-confirm-modal'
-  ).addEventListener('click', function (e) {
+  ).classList.remove('open');
 
-    if (e.target === this) {
+});
 
-      this.classList.remove('open');
+document.getElementById(
+  'btn-confirm-delete'
+).addEventListener('click', function () {
 
-    }
+  deleteCurrentEntry();
 
-  });
+});
+
+document.getElementById(
+  'btn-cancel-move'
+).addEventListener('click', function () {
 
   document.getElementById(
     'move-to-modal'
-  ).addEventListener('click', function (e) {
+  ).classList.remove('open');
 
-    if (e.target === this) {
+});
 
-      this.classList.remove('open');
+// Close modals when clicking overlay
 
-    }
+document.getElementById(
+  'entry-options-modal'
+).addEventListener('click', function (e) {
 
-  });
+  if (e.target === this) {
 
-  function goToAdd() {
-
-    window.location.href =
-      '/add.html?playlistId=' +
-      playlistId +
-      '&type=' + (currentPlaylistType || 'media');
+    this.classList.remove('open');
 
   }
 
+});
+
+document.getElementById(
+  'edit-entry-modal'
+).addEventListener('click', function (e) {
+
+  if (e.target === this) {
+
+    this.classList.remove('open');
+
+  }
+
+});
+
+document.getElementById(
+  'delete-confirm-modal'
+).addEventListener('click', function (e) {
+
+  if (e.target === this) {
+
+    this.classList.remove('open');
+
+  }
+
+});
+
+document.getElementById(
+  'move-to-modal'
+).addEventListener('click', function (e) {
+
+  if (e.target === this) {
+
+    this.classList.remove('open');
+
+  }
+
+});
+
+function goToAdd() {
+
+  window.location.href =
+    '/add.html?playlistId=' +
+    playlistId +
+    '&type=' + (currentPlaylistType || 'media');
+
+}
+
+document.getElementById(
+  'btn-back'
+).addEventListener('click', function () {
+
+  if (document.referrer && document.referrer.indexOf(window.location.origin) === 0) {
+    window.history.back();
+  } else {
+    window.location.href = '/home.html';
+  }
+
+});
+
+document.getElementById(
+  'fab-add'
+).addEventListener(
+  'click',
+  goToAdd
+);
+
+document.getElementById(
+  'btn-add-empty'
+).addEventListener(
+  'click',
+  goToAdd
+);
+
+// Rename playlist
+
+document.getElementById(
+  'playlist-title'
+).addEventListener('click', function () {
+
   document.getElementById(
-    'btn-back'
-  ).addEventListener('click', function () {
-
-    window.location.href =
-      '/home.html';
-
-  });
+    'rename-input'
+  ).value = currentName;
 
   document.getElementById(
-    'fab-add'
-  ).addEventListener(
-    'click',
-    goToAdd
-  );
+    'rename-modal'
+  ).classList.add('open');
 
   document.getElementById(
-    'btn-add-empty'
-  ).addEventListener(
-    'click',
-    goToAdd
-  );
+    'rename-input'
+  ).focus();
 
-  // Rename playlist
+});
+
+document.getElementById(
+  'btn-cancel-rename'
+).addEventListener('click', function () {
 
   document.getElementById(
-    'playlist-title'
-  ).addEventListener('click', function () {
+    'rename-modal'
+  ).classList.remove('open');
 
+});
+
+document.getElementById(
+  'btn-confirm-rename'
+).addEventListener('click', function () {
+
+  var newName =
     document.getElementById(
       'rename-input'
-    ).value = currentName;
+    ).value.trim();
 
-    document.getElementById(
-      'rename-modal'
-    ).classList.add('open');
+  if (!newName) return;
 
-    document.getElementById(
-      'rename-input'
-    ).focus();
+  AppDB.updatePlaylistName(
+    uid,
+    playlistId,
+    newName
+  )
+    .then(function () {
 
-  });
+      currentName = newName;
 
-  document.getElementById(
-    'btn-cancel-rename'
-  ).addEventListener('click', function () {
-
-    document.getElementById(
-      'rename-modal'
-    ).classList.remove('open');
-
-  });
-
-  document.getElementById(
-    'btn-confirm-rename'
-  ).addEventListener('click', function () {
-
-    var newName =
       document.getElementById(
-        'rename-input'
-      ).value.trim();
+        'playlist-title'
+      ).textContent = newName;
 
-    if (!newName) return;
+      document.getElementById(
+        'rename-modal'
+      ).classList.remove('open');
 
-    AppDB.updatePlaylistName(
-      uid,
-      playlistId,
-      newName
-    )
-      .then(function () {
+      AppUtils.showToast(
+        'Renamed ✓'
+      );
 
-        currentName = newName;
+    })
+    .catch(function (err) {
 
-        document.getElementById(
-          'playlist-title'
-        ).textContent = newName;
+      console.error(err);
 
-        document.getElementById(
-          'rename-modal'
-        ).classList.remove('open');
+      AppUtils.showToast(
+        'Failed to rename.'
+      );
 
-        AppUtils.showToast(
-          'Renamed ✓'
-        );
+    });
 
-      })
-      .catch(function (err) {
-
-        console.error(err);
-
-        AppUtils.showToast(
-          'Failed to rename.'
-        );
-
-      });
-
-  });
+});
 
 });

@@ -1,6 +1,20 @@
 // Utility functions for DOM manipulation, formatting, and helpers
 window.AppUtils = {
 
+  roundRectPath: function(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  },
+
   showToast: function(message, duration) {
     duration = duration || 2500;
     var toast = document.getElementById('toast');
@@ -83,8 +97,9 @@ window.AppUtils = {
     if (!entries || entries.length === 0) {
       return '🎬 Start logging to see your stats here';
     }
+    var isGameSet = entries.length > 0 && entries.every(function(e) { return e.type === 'game'; });
     var totalMinutes = entries.reduce(function(sum, e) {
-      return sum + (e.runtime || 0);
+      return sum + (isGameSet ? (e.playtime || 0) * 60 : (e.runtime || 0));
     }, 0);
     var totalHours = Math.round(totalMinutes / 60);
     var currentMonth = new Date().getMonth() + 1;
@@ -94,20 +109,20 @@ window.AppUtils = {
         && e.yearWatched === currentYear;
     }).length;
     var highRated = entries.filter(function(e) {
-      return e.rating >= 4;
+      return isGameSet ? (e.gameRating >= 8) : (e.rating >= 4);
     }).length;
     var pct = entries.length > 0
       ? Math.round((highRated / entries.length) * 100)
       : 0;
     var facts = [
-      '🕐 You\'ve watched ' + totalHours
+        '🕐 You\'ve ' + (isGameSet ? 'played' : 'watched') + ' ' + totalHours
         + ' hours — that\'s '
         + (totalHours / 24).toFixed(1)
         + ' days non-stop',
-      '📂 ' + entries.length + ' titles across '
+      '📂 ' + entries.length + (isGameSet ? ' games across ' : ' titles across ')
         + (playlistCount || 1) + ' playlists',
-      '⭐ ' + pct + '% of what you watched'
-        + ' got 4 stars or above',
+      '⭐ ' + pct + '% of what you ' + (isGameSet ? 'played' : 'watched')
+        + (isGameSet ? ' scored 8/10 or above' : ' got 4 stars or above'),
       '📅 This month you\'ve logged '
         + thisMonth + ' title'
         + (thisMonth !== 1 ? 's' : '')

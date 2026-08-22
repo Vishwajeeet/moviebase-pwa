@@ -18,13 +18,37 @@
         <div style="width:40px"></div>
       </div>
 
-      <div id="entry-content"></div>
+      <div id="entry-content">
+        <div class="skeleton" style="height:340px;border-radius:16px;margin-bottom:16px"></div>
+        <div class="skeleton" style="height:28px;width:70%;border-radius:6px;margin-bottom:10px"></div>
+        <div class="skeleton" style="height:16px;width:40%;border-radius:6px;margin-bottom:20px"></div>
+        <div class="skeleton" style="height:180px;border-radius:14px"></div>
+      </div>
 
     </main>
   </div>
 
   <div id="toast" class="toast"></div>
+    <!-- Move to Playlist -->
+  <div class="modal-overlay" id="move-modal">
+    <div class="modal-box">
+      <p class="modal-title">Move to Playlist</p>
+      <div id="move-playlist-list" style="max-height:320px;overflow-y:auto;margin:16px 0"></div>
+      <button class="btn btn-ghost" id="btn-cancel-move">Cancel</button>
+    </div>
+  </div>
 
+  <!-- Share Entry -->
+  <div class="modal-overlay" id="share-modal">
+    <div class="modal-box">
+      <p class="modal-title">Share Entry</p>
+      <div id="share-canvas-wrap" style="margin:16px 0"></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="btn-close-share">Close</button>
+        <button class="btn btn-primary" id="btn-download-share">↓ Download</button>
+      </div>
+    </div>
+  </div>
   <!-- Delete Confirm -->
   <div class="modal-overlay" id="delete-modal">
     <div class="modal-box">

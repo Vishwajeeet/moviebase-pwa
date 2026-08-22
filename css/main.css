@@ -443,7 +443,8 @@ button {
 }
 
 .month-chip,
-.year-chip {
+.year-chip,
+.chip {
 
   padding: 10px 16px;
   border-radius: 999px;
@@ -462,13 +463,15 @@ button {
 }
 
 .month-chip.selected,
-.year-chip.active {
+.year-chip.active,
+.chip.selected {
   background: var(--accent);
   color: #000;
   font-weight: 600;
 }
 .month-chip:hover,
-.year-chip:hover {
+.year-chip:hover,
+.chip:hover {
 
   background: #2a2a2a;
 
@@ -1191,3 +1194,27 @@ textarea.input-field {
   font-size: 15px;
   cursor: pointer;
 }
+#stats-type-pills { margin-bottom: 16px; }
+.stat-strip { margin-bottom: 24px; }
+#playtime-leaderboard,
+#top-picks,
+#fun-facts,
+#deep-cuts { margin-bottom: 8px; }
+.section-title { margin-top: 32px !important; margin-bottom: 14px; }
+@media (max-width: 400px) {
+  .stat-number { font-size: 22px; }
+  .stat-label { font-size: 9.5px; letter-spacing: 0; }
+  .stat-box { padding: 14px 12px; }
+  .stat-strip { gap: 8px; }
+}
+
+.stat-number {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* ===== FINAL POLISH ===== */
+img { content-visibility: auto; }
+.card, .playlist-card, .stat-box { will-change: transform; }
+* { -webkit-tap-highlight-color: transparent; }
+.btn, .fab, .type-pill, .chip, .month-chip, .year-chip { -webkit-user-select: none; user-select: none; }

@@ -1,7 +1,7 @@
 // Home page logic
 var ALL_ENTRIES = [];
 var ALL_PLAYLISTS = [];
-var ACTIVE_YEAR = new Date().getFullYear();
+var ACTIVE_YEAR = 'all';
 var ACTIVE_TAB = new URLSearchParams(window.location.search).get('tab') === 'games' ? 'games' : 'media';
 AppAuth.requireAuth(function(user) {
 
@@ -31,6 +31,8 @@ AppAuth.requireAuth(function(user) {
         ALL_ENTRIES = entries;
 
         document.querySelector('.type-pill[data-tab="' + ACTIVE_TAB + '"]').classList.add('active');
+
+        updateFabVisibility();
 
         renderYearFilters(entries);
 
@@ -112,14 +114,24 @@ AppAuth.requireAuth(function(user) {
       'stat-hours'
     ).textContent = daysDisplay;
 
+    document.getElementById('stat-hours-label').textContent =
+      totalDays < 1 ? 'Hours' : 'Days';
+
     document.getElementById(
       'stat-month'
     ).textContent =
       thisMonthCount;
 
     var gameCount = entries.filter(function(e) { return e.type === 'game'; }).length;
-    document.getElementById('stat-type').textContent =
-      ACTIVE_TAB === 'games' ? (gameCount + ' Games') : (movieCount + ' Movies · ' + seriesCount + ' Series');
+    var completedGameCount = entries.filter(function(e) { return e.type === 'game' && e.completionStatus === 'completed'; }).length;
+
+    if (ACTIVE_TAB === 'games') {
+      document.getElementById('stat-type').textContent = completedGameCount;
+      document.getElementById('stat-type-label').textContent = 'Completed';
+    } else {
+      document.getElementById('stat-type').textContent = movieCount + ' · ' + seriesCount;
+      document.getElementById('stat-type-label').textContent = 'Movies · Series';
+    }
 
     document.getElementById(
       'fun-fact'
@@ -349,6 +361,15 @@ function applyYearFilter() {
 
   }
 
+  function updateFabVisibility() {
+    document.getElementById('fab-create').style.display = ACTIVE_TAB === 'games' ? 'none' : 'flex';
+    document.getElementById('fab-add-game').style.display = ACTIVE_TAB === 'games' ? 'flex' : 'none';
+  }
+
+  document.getElementById('fab-add-game').addEventListener('click', function() {
+    window.location.href = '/add.html?type=game';
+  });
+
   document.getElementById('type-pills').addEventListener('click', function(e) {
     var btn = e.target.closest('.type-pill');
     if (!btn) return;
@@ -358,6 +379,7 @@ function applyYearFilter() {
     var url = new URL(window.location.href);
     url.searchParams.set('tab', ACTIVE_TAB);
     window.history.replaceState({}, '', url);
+    updateFabVisibility();
     applyYearFilter();
   });
 
@@ -506,10 +528,9 @@ function applyYearFilter() {
     AppDB.updatePlaylistName(uid, activePlaylist.id, name).then(function () {
       optionsModal.classList.remove('open');
       AppUtils.showToast('Renamed ✓');
-      return Promise.all([AppDB.getPlaylists(uid), AppDB.getAllEntries(uid)]);
-    }).then(function (results) {
-      ALL_PLAYLISTS = results[0];
-      ALL_ENTRIES = results[1];
+      return AppDB.getPlaylists(uid);
+    }).then(function (playlists) {
+      ALL_PLAYLISTS = playlists;
       applyYearFilter();
     });
   });
@@ -535,10 +556,9 @@ function applyYearFilter() {
         AppDB.updatePlaylistCover(uid, activePlaylist.id, dataUrl).then(function () {
           optionsModal.classList.remove('open');
           AppUtils.showToast('Cover updated ✓');
-          return Promise.all([AppDB.getPlaylists(uid), AppDB.getAllEntries(uid)]);
-        }).then(function (results) {
-          ALL_PLAYLISTS = results[0];
-          ALL_ENTRIES = results[1];
+          return AppDB.getPlaylists(uid);
+        }).then(function (playlists) {
+          ALL_PLAYLISTS = playlists;
           applyYearFilter();
         });
       };
