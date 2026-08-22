@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <meta name="theme-color" content="#0d0d0d">
 
@@ -14,10 +12,7 @@
 
   <link rel="manifest" href="/manifest.json">
 
-  <link
-    rel="stylesheet"
-    href="/css/main.css"
-  >
+  <link rel="stylesheet" href="/css/main.css">
 </head>
 
 <body>
@@ -28,52 +23,32 @@
 
       <header class="page-header">
 
-        <button
-          class="back-btn"
-          id="btn-back"
-        >
+        <button class="back-btn" id="btn-back">
           ←
         </button>
 
-        <h1
-          class="page-title"
-          id="playlist-title"
-          style="font-size:18px"
-        >
+        <h1 class="page-title" id="playlist-title" style="font-size:18px">
           ...
         </h1>
 
-        <span
-          id="entry-count"
-          class="text-sm text-muted"
-        ></span>
+        <span id="entry-count" class="text-sm text-muted"></span>
 
       </header>
 
-      <p
-        class="text-sm text-muted"
-        style="margin-bottom:16px"
-      >
+      <p class="text-sm text-muted" style="margin-bottom:16px">
         Tap title to rename
       </p>
 
-      <div class="toggle-pair" id="type-filter" 
-        style="margin-bottom:16px;grid-template-columns: 1fr 1fr 1fr">
-        <button class="toggle-btn active" 
-          data-filter="all">All</button>
-        <button class="toggle-btn" 
-          data-filter="movie">🎬 Movies</button>
-        <button class="toggle-btn" 
-          data-filter="series">📺 Series</button>
+      <div class="toggle-pair" id="type-filter" style="margin-bottom:16px;grid-template-columns: 1fr 1fr 1fr 1fr">
+        <button class="toggle-btn active" data-filter="all">All</button>
+        <button class="toggle-btn" data-filter="movie">🎬</button>
+        <button class="toggle-btn" data-filter="series">📺</button>
+        <button class="toggle-btn" data-filter="game">🎮</button>
       </div>
 
       <div id="entries-container"></div>
 
-      <div
-        id="empty-state"
-        class="empty-state"
-        style="display:none"
-      >
+      <div id="empty-state" class="empty-state" style="display:none">
 
         <div class="empty-state-icon">
           🎬
@@ -83,11 +58,7 @@
           Nothing here yet.
         </p>
 
-        <button
-          class="btn btn-primary"
-          style="max-width:200px;margin:0 auto"
-          id="btn-add-empty"
-        >
+        <button class="btn btn-primary" style="max-width:200px;margin:0 auto" id="btn-add-empty">
           Add something
         </button>
 
@@ -97,17 +68,12 @@
 
   </div>
 
-  <button
-    class="fab"
-    id="fab-add"
-  >
-    +
+    <button class="fab" id="fab-add">
+    <span>+</span> Add Entry
   </button>
+    
 
-  <div
-    class="modal-overlay"
-    id="rename-modal"
-  >
+  <div class="modal-overlay" id="rename-modal">
 
     <div class="modal-box">
 
@@ -115,25 +81,15 @@
         Rename Playlist
       </p>
 
-      <input
-        class="input-field"
-        id="rename-input"
-        maxlength="40"
-      >
+      <input class="input-field" id="rename-input" maxlength="40">
 
       <div class="modal-actions">
 
-        <button
-          class="btn btn-ghost"
-          id="btn-cancel-rename"
-        >
+        <button class="btn btn-ghost" id="btn-cancel-rename">
           Cancel
         </button>
 
-        <button
-          class="btn btn-primary"
-          id="btn-confirm-rename"
-        >
+        <button class="btn btn-primary" id="btn-confirm-rename">
           Save
         </button>
 
@@ -145,31 +101,23 @@
 
   <!-- Options Bottom Sheet -->
 
-  <div
-    class="modal-overlay"
-    id="entry-options-modal"
-  >
+  <div class="modal-overlay" id="entry-options-modal">
 
     <div class="modal-box">
 
-      <button
-        class="btn-option"
-        id="btn-edit-entry"
-      >
+      <button class="btn-option" id="btn-edit-entry">
         ✏️ Edit Entry
       </button>
 
-      <button
-        class="btn-option"
-        id="btn-move-entry"
-      >
+      <button class="btn-option" id="btn-move-entry">
         📂 Move to Playlist
       </button>
 
-      <button
-        class="btn-option btn-option-danger"
-        id="btn-delete-entry"
-      >
+      <button class="btn-option" id="btn-share-entry">
+        🔗 Share Entry
+      </button>
+
+      <button class="btn-option btn-option-danger" id="btn-delete-entry">
         🗑️ Delete Entry
       </button>
 
@@ -179,10 +127,7 @@
 
   <!-- Edit Entry Modal -->
 
-  <div
-    class="modal-overlay"
-    id="edit-entry-modal"
-  >
+  <div class="modal-overlay" id="edit-entry-modal">
 
     <div class="modal-box">
 
@@ -196,33 +141,21 @@
         MONTH WATCHED
       </p>
 
-      <div
-        class="month-scroll"
-        id="edit-month-chips"
-      ></div>
+      <div class="month-scroll" id="edit-month-chips"></div>
 
       <p style="font-size:12px;font-weight:600;color:var(--text-muted);margin:20px 0 12px">
         RATING
       </p>
 
-      <div
-        class="emoji-row"
-        id="edit-emoji-row"
-      ></div>
+      <div class="emoji-row" id="edit-emoji-row"></div>
 
       <div class="modal-actions">
 
-        <button
-          class="btn btn-ghost"
-          id="btn-cancel-edit"
-        >
+        <button class="btn btn-ghost" id="btn-cancel-edit">
           Cancel
         </button>
 
-        <button
-          class="btn btn-primary"
-          id="btn-save-edit"
-        >
+        <button class="btn btn-primary" id="btn-save-edit">
           Save Changes
         </button>
 
@@ -234,10 +167,7 @@
 
   <!-- Delete Confirm Modal -->
 
-  <div
-    class="modal-overlay"
-    id="delete-confirm-modal"
-  >
+  <div class="modal-overlay" id="delete-confirm-modal">
 
     <div class="modal-box">
 
@@ -251,17 +181,11 @@
 
       <div class="modal-actions">
 
-        <button
-          class="btn btn-ghost"
-          id="btn-cancel-delete"
-        >
+        <button class="btn btn-ghost" id="btn-cancel-delete">
           Cancel
         </button>
 
-        <button
-          class="btn btn-danger"
-          id="btn-confirm-delete"
-        >
+        <button class="btn btn-danger" id="btn-confirm-delete">
           Delete
         </button>
 
@@ -273,10 +197,7 @@
 
   <!-- Move to Playlist Modal -->
 
-  <div
-    class="modal-overlay"
-    id="move-to-modal"
-  >
+  <div class="modal-overlay" id="move-to-modal">
 
     <div class="modal-box">
 
@@ -288,10 +209,7 @@
 
       <div class="modal-actions">
 
-        <button
-          class="btn btn-ghost"
-          id="btn-cancel-move"
-        >
+        <button class="btn btn-ghost" id="btn-cancel-move">
           Cancel
         </button>
 
@@ -300,7 +218,29 @@
     </div>
 
   </div>
+  <!-- Share Card Modal -->
+  <div class="modal-overlay" id="share-modal">
+    <div class="modal-box">
+      <p class="modal-title">Share Entry</p>
+      <div id="share-canvas-wrap" style="margin-bottom:16px;border-radius:12px;overflow:hidden"></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="btn-close-share">Close</button>
+        <button class="btn btn-primary" id="btn-download-share">⬇ Download</button>
+      </div>
+    </div>
+  </div>
 
+  <!-- Logout Confirm Modal -->
+  <div class="modal-overlay" id="logout-modal">
+    <div class="modal-box">
+      <p class="modal-title">Sign out?</p>
+      <p style="color:var(--text-muted);margin-bottom:24px">You'll need to sign in again to access your data.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="btn-cancel-logout">Cancel</button>
+        <button class="btn btn-danger" id="btn-confirm-logout">Sign Out</button>
+      </div>
+    </div>
+  </div>
   <div id="toast" class="toast"></div>
 
   <!-- Firebase CDN -->
@@ -315,6 +255,7 @@
   <script src="/js/utils.js"></script>
   <script src="/js/firestore.js"></script>
   <script src="/js/tmdb.js"></script>
+  <script src="/js/rawg.js"></script>
 
   <!-- Page script -->
   <script src="/js/playlist.js"></script>
@@ -327,4 +268,5 @@
   </script>
 
 </body>
+
 </html>

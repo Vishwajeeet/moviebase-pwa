@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0d0d0d">
+  <title>Entry — MediaBase</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <div class="app-container">
+    <main class="page">
+
+      <div class="page-header">
+        <button id="btn-back" class="back-btn">←</button>
+        <h1 class="page-title">Details</h1>
+        <div style="width:40px"></div>
+      </div>
+
+      <div id="entry-content"></div>
+
+    </main>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <!-- Delete Confirm -->
+  <div class="modal-overlay" id="delete-modal">
+    <div class="modal-box">
+      <p class="modal-title">Delete this entry?</p>
+      <p style="color:var(--text-muted);margin-bottom:24px">This can't be undone.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="btn-cancel-delete">Cancel</button>
+        <button class="btn btn-danger" id="btn-confirm-delete">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/firebase-init.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/firestore.js"></script>
+  <script src="/js/entry.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
+</body>
+</html>

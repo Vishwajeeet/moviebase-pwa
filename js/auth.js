@@ -6,6 +6,8 @@ window.AppAuth = {
     var provider =
       new firebase.auth.GoogleAuthProvider();
 
+    provider.setCustomParameters({ prompt: 'select_account' });
+
     return auth.signInWithPopup(provider);
   },
 

@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <meta name="theme-color" content="#0d0d0d">
 
@@ -14,10 +12,7 @@
 
   <link rel="manifest" href="/manifest.json">
 
-  <link
-    rel="stylesheet"
-    href="/css/main.css"
-  >
+  <link rel="stylesheet" href="/css/main.css">
 </head>
 
 <body>
@@ -34,43 +29,30 @@
 
         <div>
 
-          <button
-            class="icon-btn"
-            id="btn-stats"
-          >
+          <button class="icon-btn" id="btn-stats">
             📊
           </button>
 
-          <button
-            class="icon-btn"
-            id="btn-signout"
-          >
-            →
+          <button class="icon-btn" id="btn-signout" title="Sign out">
+            ⏻
           </button>
 
         </div>
 
       </header>
-
-      <div
-        id="fun-fact"
-        class="fun-fact-box"
-      >
+      <div class="type-pills" id="type-pills">
+        <button class="type-pill" data-tab="media" type="button">🎬 Movies & Series</button>
+        <button class="type-pill" data-tab="games" type="button">🎮 Games</button>
+      </div>
+      <div id="fun-fact" class="fun-fact-box">
         Loading your stats...
       </div>
-      <div
-      id="year-filters"
-      class="year-filters"
-      style="margin-bottom:20px"
-    ></div>
+      <div id="year-filters" class="year-filters" style="margin-bottom:20px"></div>
 
       <section class="stat-strip">
 
         <div class="stat-box">
-          <div
-            class="stat-number"
-            id="stat-total"
-          >
+          <div class="stat-number" id="stat-total">
             —
           </div>
 
@@ -80,10 +62,7 @@
         </div>
 
         <div class="stat-box">
-          <div
-            class="stat-number"
-            id="stat-hours"
-          >
+          <div class="stat-number" id="stat-hours">
             —
           </div>
 
@@ -93,10 +72,7 @@
         </div>
 
         <div class="stat-box">
-          <div
-            class="stat-number"
-            id="stat-month"
-          >
+          <div class="stat-number" id="stat-month">
             —
           </div>
 
@@ -106,15 +82,12 @@
         </div>
 
         <div class="stat-box">
-          <div
-            class="stat-number"
-            id="stat-type"
-          >
+          <div class="stat-number" id="stat-type">
             —
           </div>
 
           <div class="stat-label">
-            Movies · Series
+            Films · Series · Games
           </div>
         </div>
 
@@ -126,50 +99,31 @@
           My Playlists
         </p>
 
-        <div
-          id="playlists-grid"
-          class="grid-2"
-        >
+        <div id="playlists-grid" class="grid-2">
 
-          <div
-            class="skeleton"
-            style="
+          <div class="skeleton" style="
               height:140px;
               border-radius:12px;
-            "
-          ></div>
+            "></div>
 
-          <div
-            class="skeleton"
-            style="
+          <div class="skeleton" style="
               height:140px;
               border-radius:12px;
-            "
-          ></div>
+            "></div>
 
-          <div
-            class="skeleton"
-            style="
+          <div class="skeleton" style="
               height:140px;
               border-radius:12px;
-            "
-          ></div>
+            "></div>
 
-          <div
-            class="skeleton"
-            style="
+          <div class="skeleton" style="
               height:140px;
               border-radius:12px;
-            "
-          ></div>
+            "></div>
 
         </div>
 
-        <div
-          id="empty-playlists"
-          class="empty-state"
-          style="display:none"
-        >
+        <div id="empty-playlists" class="empty-state" style="display:none">
 
           <div class="empty-state-icon">
             📂
@@ -188,17 +142,32 @@
 
   </div>
 
-  <button
-    class="fab"
-    id="fab-create"
-  >
-    +
+  <button class="fab" id="fab-create">
+    <span>+</span> Create Playlist
   </button>
+    <div class="modal-overlay" id="playlist-options-modal">
+    <div class="modal-box">
+      <p class="modal-title">Playlist Options</p>
+      <input class="input-field" id="rename-input" placeholder="Playlist name" maxlength="40" style="margin-bottom:12px">
+      <button class="btn btn-ghost" id="btn-change-cover" style="margin-bottom:8px">🖼 Change Cover Image</button>
+      <input type="file" id="cover-file-input" accept="image/*" style="display:none">
+      <button class="btn btn-primary" id="btn-save-rename" style="margin-bottom:8px">Save Name</button>
+      <button class="btn btn-danger" id="btn-delete-playlist" style="margin-bottom:8px">Delete Playlist</button>
+      <button class="btn btn-ghost" id="btn-close-playlist-options">Close</button>
+    </div>
+  </div>
 
-  <div
-    class="modal-overlay"
-    id="create-modal"
-  >
+  <div class="modal-overlay" id="delete-playlist-confirm">
+    <div class="modal-box">
+      <p class="modal-title">Delete this playlist?</p>
+      <p style="color:var(--text-muted);margin-bottom:24px">All entries inside it will also be deleted. This can't be undone.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="btn-cancel-delete-playlist">Cancel</button>
+        <button class="btn btn-danger" id="btn-confirm-delete-playlist">Delete</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" id="create-modal">
 
     <div class="modal-box">
 
@@ -206,27 +175,15 @@
         New Playlist
       </p>
 
-      <input
-        class="input-field"
-        id="playlist-name-input"
-        placeholder="e.g. 2026, Horror Run..."
-        maxlength="40"
-      >
+      <input class="input-field" id="playlist-name-input" placeholder="e.g. 2026, Horror Run..." maxlength="40">
 
       <div class="modal-actions">
 
-        <button
-          class="btn btn-ghost"
-          id="btn-cancel-modal"
-        >
+        <button class="btn btn-ghost" id="btn-cancel-modal">
           Cancel
         </button>
 
-        <button
-          class="btn btn-primary"
-          id="btn-create-playlist"
-          disabled
-        >
+        <button class="btn btn-primary" id="btn-create-playlist" disabled>
           Create
         </button>
 
@@ -235,7 +192,19 @@
     </div>
 
   </div>
-
+  <!-- Logout Confirm -->
+  <div class="modal-overlay" id="logout-modal">
+    <div class="modal-box">
+      <p class="modal-title">Sign out?</p>
+      <p style="color:var(--text-muted);margin-bottom:24px">
+        You'll need to sign in again to access your data.
+      </p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="btn-cancel-logout">Cancel</button>
+        <button class="btn btn-danger" id="btn-confirm-logout">Sign Out</button>
+      </div>
+    </div>
+  </div>
   <div id="toast" class="toast"></div>
 
   <!-- Firebase CDN -->
@@ -250,9 +219,15 @@
   <script src="/js/utils.js"></script>
   <script src="/js/firestore.js"></script>
   <script src="/js/tmdb.js"></script>
+  <script src="/js/rawg.js"></script>
 
   <!-- Page script -->
   <script src="/js/home.js"></script>
+  <script>
+    window.addEventListener('pageshow', function (e) {
+      if (e.persisted) window.location.reload();
+    });
+  </script>
 
   <!-- PWA -->
   <script>
@@ -262,4 +237,5 @@
   </script>
 
 </body>
+
 </html>

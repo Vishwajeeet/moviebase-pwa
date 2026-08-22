@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Add - MovieBase</title>
+  <meta name="theme-color" content="#0d0d0d">
+  <title>Add — MediaBase</title>
   <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="/css/main.css">
 </head>
@@ -14,151 +15,126 @@
 
       <div id="toast" class="toast"></div>
 
-      <!-- STEP 1 -->
+      <!-- STEP 1: SEARCH -->
       <div id="step-1" class="step active">
 
         <div class="page-header">
-          <button id="btn-back-s1"
-            class="back-btn">←</button>
-
-          <h1 class="page-title">
-            What did you watch?
-          </h1>
+          <button id="btn-back-s1" class="back-btn">←</button>
+          <h1 class="page-title" id="step1-heading">What did you watch?</h1>
         </div>
 
-        <div class="toggle-pair">
-          <button id="btn-movie"
-            class="toggle-btn active">
-            🎬 Movie
-          </button>
-
-          <button id="btn-series"
-            class="toggle-btn">
-            📺 Series
-          </button>
+        <div class="media-type-tabs">
+          <button id="btn-movie" class="media-tab active" data-type="movie">🎬 Movie</button>
+          <button id="btn-series" class="media-tab" data-type="series">📺 Series</button>
+          <button id="btn-game" class="media-tab" data-type="game">🎮 Game</button>
         </div>
 
-        <input
-          type="text"
-          id="search-input"
-          class="input-field"
-          placeholder="Search for a title..."
-        >
+        <input type="text" id="search-input" class="input-field"
+          placeholder="Search for a title..." style="margin-bottom:8px">
 
-        <div
-          id="search-status"
-          class="text-sm text-muted"
-          style="margin:12px 0"
-        ></div>
-
-        <div
-          id="search-results"
-          class="results-list"
-        ></div>
+        <div id="search-status" class="text-sm text-muted" style="margin:8px 0"></div>
+        <div id="search-results" class="results-list"></div>
 
       </div>
 
-      <!-- STEP 2 -->
+      <!-- STEP 2: SEASON PICKER (series only) -->
       <div id="step-2" class="step">
 
         <div class="page-header">
-          <button id="btn-back-s2"
-            class="back-btn">←</button>
-
-          <h1 class="page-title">
-            Pick a season
-          </h1>
+          <button id="btn-back-s2" class="back-btn">←</button>
+          <h1 class="page-title">Pick a season</h1>
         </div>
 
         <div id="seasons-list"></div>
 
       </div>
 
-      <!-- STEP 3 -->
+      <!-- STEP 3: DETAILS -->
       <div id="step-3" class="step">
 
         <div class="page-header">
-          <button id="btn-back-s3"
-            class="back-btn">←</button>
-
-          <h1 class="page-title">
-            Almost done
-          </h1>
+          <button id="btn-back-s3" class="back-btn">←</button>
+          <h1 class="page-title">Almost done</h1>
         </div>
 
-        <img
-          id="preview-poster"
-          style="width:120px;border-radius:10px;margin-bottom:12px"
-          alt="Poster"
-        >
-
-        <h2 id="preview-title"
-          style="font-size:18px;margin-bottom:4px">
-        </h2>
-
-        <p id="preview-sub"
-          class="text-sm text-muted"
-          style="margin-bottom:24px">
-        </p>
-
-        <label class="label">
-          When did you watch it?
-        </label>
-
-        <select
-          id="year-select"
-          class="input-field"
-          style="margin-bottom:16px"
-        ></select>
-
-        <div
-          class="month-scroll"
-          id="month-chips">
+        <div class="preview-row">
+          <img id="preview-poster" class="preview-poster-img" alt="Poster">
+          <div class="preview-info">
+            <h2 id="preview-title" class="preview-title"></h2>
+            <p id="preview-sub" class="text-sm text-muted"></p>
+          </div>
         </div>
 
-        <label class="label">
-          How was it?
-        </label>
+        <!-- MOVIE/SERIES FIELDS -->
+        <div id="movie-series-fields">
+          <label class="label">When did you watch it?</label>
+          <select id="year-select" class="input-field" style="margin-bottom:12px"></select>
+          <div class="month-scroll" id="month-chips"></div>
 
-        <div
-          class="emoji-row"
-          id="emoji-row">
+          <label class="label">How was it?</label>
+          <div class="emoji-row" id="emoji-row"></div>
         </div>
 
-        <button
-          id="btn-add"
-          class="btn btn-primary"
-          disabled>
-          Add to Collection
-        </button>
+        <!-- GAME FIELDS -->
+        <div id="game-fields" style="display:none">
+
+          <label class="label">Completion Status *</label>
+          <div class="completion-grid" id="completion-row">
+            <button class="completion-btn" data-status="completed">✅ Completed</button>
+            <button class="completion-btn" data-status="playing">🕹️ Playing</button>
+            <button class="completion-btn" data-status="dropped">❌ Dropped</button>
+            <button class="completion-btn" data-status="wishlist">🔖 Wishlist</button>
+          </div>
+
+          <div id="game-extra-fields">
+            <label class="label" style="margin-top:20px">Rating (1–10)</label>
+            <div class="number-rating-row" id="number-rating-row"></div>
+
+            <label class="label" style="margin-top:20px">When did you play it?</label>
+            <select id="game-year-select" class="input-field" style="margin-bottom:12px"></select>
+            <div class="month-scroll" id="game-month-chips"></div>
+
+            <label class="label" style="margin-top:4px">Hours Played (optional)</label>
+            <input type="number" id="playtime-input" class="input-field"
+              placeholder="e.g. 47" min="0" max="9999" style="margin-bottom:16px">
+
+            
+
+            <label class="label">Your Review (optional)</label>
+            <textarea id="review-input" class="input-field"
+              placeholder="What did you think?" rows="3"
+              style="resize:none;margin-bottom:16px"></textarea>
+
+            <label class="label" id="reason-label" style="display:none">Reason for dropping (optional)</label>
+            <textarea id="reason-input" class="input-field"
+              placeholder="Why did you drop it?" rows="2"
+              style="display:none;resize:none;margin-bottom:16px"></textarea>
+          </div>
+
+        </div>
+
+        <button id="btn-add" class="btn btn-primary" disabled>Add to Collection</button>
 
       </div>
 
     </main>
   </div>
 
-  <!-- Scripts -->
-  <!-- Firebase CDN -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-
-    <!-- Shared scripts -->
-    <script src="/js/config.js"></script>
-    <script src="/js/firebase-init.js"></script>
-    <script src="/js/auth.js"></script>
-    <script src="/js/utils.js"></script>
-    <script src="/js/firestore.js"></script>
-    <script src="/js/tmdb.js"></script>
-
-    <!-- Page script -->
-    <script src="/js/add.js"></script>
-
-    <!-- PWA -->
-    <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js');
-      }
-    </script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/firebase-init.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/firestore.js"></script>
+  <script src="/js/tmdb.js"></script>
+  <script src="/js/rawg.js"></script>
+  <script src="/js/add.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
 </body>
 </html>

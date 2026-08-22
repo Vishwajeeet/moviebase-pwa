@@ -9,11 +9,13 @@ if (!playlistId) {
   window.location.href = '/home.html';
 }
 
-AppAuth.requireAuth(function(user) {
+AppAuth.requireAuth(function (user) {
 
   var uid = user.uid;
 
   var currentName = '';
+
+  var currentPlaylistType = 'media';
 
   var allEntries = [];
 
@@ -39,7 +41,7 @@ AppAuth.requireAuth(function(user) {
       )
 
     ])
-      .then(function(results) {
+      .then(function (results) {
 
         var playlistDoc = results[0];
 
@@ -56,6 +58,24 @@ AppAuth.requireAuth(function(user) {
         currentName =
           playlistDoc.data().name;
 
+        currentPlaylistType =
+          playlistDoc.data().type || 'media';
+
+        var filterRow = document.getElementById('type-filter');
+        var gameChip = filterRow.querySelector('[data-filter="game"]');
+        var movieChip = filterRow.querySelector('[data-filter="movie"]');
+        var seriesChip = filterRow.querySelector('[data-filter="series"]');
+
+        if (currentPlaylistType === 'game') {
+          filterRow.style.display = 'none';
+          filterRow.style.gridTemplateColumns = '1fr';
+        } else {
+          gameChip.style.display = 'none';
+          movieChip.style.display = '';
+          seriesChip.style.display = '';
+          filterRow.style.gridTemplateColumns = '1fr 1fr 1fr';
+        }
+
         allEntries = entries;
 
         document.getElementById(
@@ -69,7 +89,7 @@ AppAuth.requireAuth(function(user) {
         setupFilterListeners();
 
       })
-      .catch(function(err) {
+      .catch(function (err) {
 
         console.error(err);
 
@@ -138,7 +158,7 @@ AppAuth.requireAuth(function(user) {
       return allEntries;
     }
 
-    return allEntries.filter(function(entry) {
+    return allEntries.filter(function (entry) {
       return entry.type === currentFilter;
     });
 
@@ -150,11 +170,11 @@ AppAuth.requireAuth(function(user) {
       '#type-filter .toggle-btn'
     );
 
-    buttons.forEach(function(btn) {
+    buttons.forEach(function (btn) {
 
-      btn.addEventListener('click', function() {
+      btn.addEventListener('click', function () {
 
-        buttons.forEach(function(b) {
+        buttons.forEach(function (b) {
           b.classList.remove('active');
         });
 
@@ -174,142 +194,142 @@ AppAuth.requireAuth(function(user) {
 
   function renderEntries(entries) {
 
-  var container =
-    document.getElementById(
-      'entries-container'
-    );
-
-  container.innerHTML = '';
-
-  var empty =
-    document.getElementById(
-      'empty-state'
-    );
-
-  if (entries.length === 0) {
-
-    empty.style.display = 'block';
-
-    var emptyText = empty.querySelector(
-      '.empty-state-text'
-    );
-
-    if (currentFilter === 'movie') {
-
-      emptyText.textContent =
-        'No 🎬 movies in this playlist yet.';
-
-    } else if (currentFilter === 'series') {
-
-      emptyText.textContent =
-        'No 📺 series in this playlist yet.';
-
-    } else {
-
-      emptyText.textContent =
-        'Nothing here yet.';
-
-    }
-
-    return;
-  }
-
-  empty.style.display = 'none';
-
-  var grouped = {};
-
-  entries.forEach(function(entry) {
-
-    var month =
-      AppUtils.monthName(
-        entry.monthWatched || 1
+    var container =
+      document.getElementById(
+        'entries-container'
       );
 
-    var year =
-      entry.yearWatched || '';
+    container.innerHTML = '';
 
-    var key =
-      month + ' ' + year;
+    var empty =
+      document.getElementById(
+        'empty-state'
+      );
 
-    if (!grouped[key]) {
-      grouped[key] = [];
+    if (entries.length === 0) {
+
+      empty.style.display = 'block';
+
+      var emptyText = empty.querySelector(
+        '.empty-state-text'
+      );
+
+      if (currentFilter === 'movie') {
+
+        emptyText.textContent =
+          'No 🎬 movies in this playlist yet.';
+
+      } else if (currentFilter === 'series') {
+
+        emptyText.textContent =
+          'No 📺 series in this playlist yet.';
+
+      } else {
+
+        emptyText.textContent =
+          'Nothing here yet.';
+
+      }
+
+      return;
     }
 
-    grouped[key].push(entry);
+    empty.style.display = 'none';
 
-  });
+    var grouped = {};
 
-  Object.keys(grouped).forEach(function(groupName) {
+    entries.forEach(function (entry) {
 
-    var section =
-      document.createElement('section');
-
-    section.style.marginBottom = '36px';
-
-    var header =
-      document.createElement('div');
-
-    header.style.display = 'flex';
-    header.style.justifyContent =
-      'space-between';
-    header.style.alignItems =
-      'center';
-    header.style.marginBottom =
-      '16px';
-
-    header.innerHTML = (
-
-      '<h2 style="' +
-      'font-size:20px;' +
-      'font-weight:700' +
-      '">' +
-
-      groupName +
-
-      '</h2>' +
-
-      '<span class="text-sm text-muted">' +
-
-      grouped[groupName].length +
-
-      ' title' +
-
-      (
-        grouped[groupName].length !== 1
-        ? 's'
-        : ''
-      ) +
-
-      '</span>'
-
-    );
-
-    section.appendChild(header);
-
-    var grid =
-      document.createElement('div');
-
-    grid.className = 'grid-2';
-
-    grouped[groupName].forEach(function(entry) {
-
-      var card =
-        document.createElement('div');
-
-      card.className = 'card';
-
-      card.dataset.entryId = entry.id;
-
-      var posterUrl =
-        AppUtils.getPosterUrl(
-          entry.poster
+      var month =
+        AppUtils.monthName(
+          entry.monthWatched || 1
         );
 
-      var posterHTML =
+      var year =
+        entry.yearWatched || '';
 
-        posterUrl
+      var key =
+        month + ' ' + year;
 
-        ? '<img class="poster-img" src="' +
+      if (!grouped[key]) {
+        grouped[key] = [];
+      }
+
+      grouped[key].push(entry);
+
+    });
+
+    Object.keys(grouped).forEach(function (groupName) {
+
+      var section =
+        document.createElement('section');
+
+      section.style.marginBottom = '36px';
+
+      var header =
+        document.createElement('div');
+
+      header.style.display = 'flex';
+      header.style.justifyContent =
+        'space-between';
+      header.style.alignItems =
+        'center';
+      header.style.marginBottom =
+        '16px';
+
+      header.innerHTML = (
+
+        '<h2 style="' +
+        'font-size:20px;' +
+        'font-weight:700' +
+        '">' +
+
+        groupName +
+
+        '</h2>' +
+
+        '<span class="text-sm text-muted">' +
+
+        grouped[groupName].length +
+
+        ' title' +
+
+        (
+          grouped[groupName].length !== 1
+            ? 's'
+            : ''
+        ) +
+
+        '</span>'
+
+      );
+
+      section.appendChild(header);
+
+      var grid =
+        document.createElement('div');
+
+      grid.className = 'grid-2';
+
+      grouped[groupName].forEach(function (entry) {
+
+        var card =
+          document.createElement('div');
+
+        card.className = 'card';
+
+        card.dataset.entryId = entry.id;
+
+        var posterUrl =
+          AppUtils.getPosterUrl(
+            entry.poster
+          );
+
+        var posterHTML =
+
+          posterUrl
+
+            ? '<img class="poster-img" src="' +
 
             posterUrl +
 
@@ -319,33 +339,32 @@ AppAuth.requireAuth(function(user) {
 
             '" onerror="this.style.display=\'none\'">'
 
-        : '<div class="poster-placeholder">🎬</div>';
+            : '<div class="poster-placeholder">' + (entry.type === 'game' ? '🎮' : '🎬') + '</div>';
 
-      var seasonBadge =
+        var seasonBadge = '';
+        if (entry.type === 'series') {
+          seasonBadge = '<span class="badge badge-tl">S' + entry.season + '</span>';
+        } else if (entry.type === 'game') {
+          var statusColors = { completed: '#22c55e', playing: '#f59e0b', dropped: '#ef4444', wishlist: '#6366f1' };
+          var statusLabels = { completed: '✅', playing: '🕹️', dropped: '❌', wishlist: '🔖' };
+          var st = entry.completionStatus || 'wishlist';
+          seasonBadge = '<span class="badge badge-tl" style="background:' + (statusColors[st] || '#6366f1') + ';color:#000">' + (statusLabels[st] || '🎮') + '</span>';
+        }
 
-        entry.type === 'series'
+        var ratingBadge = '';
+        if (entry.type === 'game') {
+          ratingBadge = entry.gameRating
+            ? '<span class="badge badge-tr badge-rating-big" style="background:var(--accent-game);color:#fff">' + entry.gameRating + '</span>'
+            : '';
+        } else {
+          ratingBadge = entry.rating
+            ? '<span class="badge badge-tr">' + AppUtils.ratingToEmoji(entry.rating) + '</span>'
+            : '';
+        }
 
-        ? '<span class="badge badge-tl">S' +
+        card.innerHTML = (
 
-            entry.season +
-
-          '</span>'
-
-        : '';
-
-      var ratingBadge =
-
-        '<span class="badge badge-tr">' +
-
-          AppUtils.ratingToEmoji(
-            entry.rating
-          ) +
-
-        '</span>';
-
-      card.innerHTML = (
-
-        '<div class="poster-wrap">' +
+          '<div class="poster-wrap">' +
 
           posterHTML +
 
@@ -359,39 +378,44 @@ AppAuth.requireAuth(function(user) {
 
           '<p class="poster-title">' +
 
-            entry.title +
+          entry.title +
 
           '</p>' +
 
-        '</div>'
+          '</div>'
 
-      );
+        );
 
-      card.querySelector('.btn-menu-entry').addEventListener('click', function(e) {
+        card.querySelector('.btn-menu-entry').addEventListener('click', function (e) {
 
-        e.stopPropagation();
+          e.stopPropagation();
 
-        openEntryOptions(entry);
+          openEntryOptions(entry);
+
+        });
+
+        card.addEventListener('click', function () {
+          window.location.href = '/entry.html?id=' + entry.id;
+        });
+
+        grid.appendChild(card);
 
       });
 
-      grid.appendChild(card);
+      section.appendChild(grid);
+
+      container.appendChild(section);
 
     });
 
-    section.appendChild(grid);
-
-    container.appendChild(section);
-
-  });
-
-}
+  }
 
   function goToAdd() {
 
     window.location.href =
       '/add.html?playlistId=' +
-      playlistId;
+      playlistId +
+      '&type=' + (currentPlaylistType || 'media');
 
   }
 
@@ -454,12 +478,12 @@ AppAuth.requireAuth(function(user) {
     container.innerHTML = '';
 
     var months = [
-      'Jan','Feb','Mar','Apr',
-      'May','Jun','Jul','Aug',
-      'Sep','Oct','Nov','Dec'
+      'Jan', 'Feb', 'Mar', 'Apr',
+      'May', 'Jun', 'Jul', 'Aug',
+      'Sep', 'Oct', 'Nov', 'Dec'
     ];
 
-    months.forEach(function(month, index) {
+    months.forEach(function (month, index) {
 
       var btn = document.createElement('button');
 
@@ -473,10 +497,10 @@ AppAuth.requireAuth(function(user) {
 
       btn.dataset.month = index + 1;
 
-      btn.addEventListener('click', function() {
+      btn.addEventListener('click', function () {
 
         container.querySelectorAll('.month-chip')
-          .forEach(function(c) {
+          .forEach(function (c) {
             c.classList.remove('selected');
           });
 
@@ -502,9 +526,9 @@ AppAuth.requireAuth(function(user) {
 
     row.innerHTML = '';
 
-    var emojis = ['😭','🙁','😐','😊','🤩'];
+    var emojis = ['😭', '🙁', '😐', '😊', '🤩'];
 
-    emojis.forEach(function(emoji, index) {
+    emojis.forEach(function (emoji, index) {
 
       var btn = document.createElement('button');
 
@@ -516,10 +540,10 @@ AppAuth.requireAuth(function(user) {
 
       btn.textContent = emoji;
 
-      btn.addEventListener('click', function() {
+      btn.addEventListener('click', function () {
 
         row.querySelectorAll('.emoji-btn')
-          .forEach(function(b) {
+          .forEach(function (b) {
             b.classList.remove('selected');
           });
 
@@ -549,7 +573,7 @@ AppAuth.requireAuth(function(user) {
       currentEditEntry.id,
       updateData
     )
-      .then(function() {
+      .then(function () {
 
         document.getElementById(
           'edit-entry-modal'
@@ -565,7 +589,7 @@ AppAuth.requireAuth(function(user) {
         );
 
       })
-      .catch(function(err) {
+      .catch(function (err) {
 
         console.error(err);
 
@@ -621,7 +645,7 @@ AppAuth.requireAuth(function(user) {
       uid,
       currentDeleteEntry.id
     )
-      .then(function() {
+      .then(function () {
 
         document.getElementById(
           'delete-confirm-modal'
@@ -636,12 +660,12 @@ AppAuth.requireAuth(function(user) {
         if (card) {
           card.style.opacity = '0';
 
-          setTimeout(function() {
+          setTimeout(function () {
             card.remove();
           }, 200);
         }
 
-        allEntries = allEntries.filter(function(e) {
+        allEntries = allEntries.filter(function (e) {
           return e.id !== currentDeleteEntry.id;
         });
 
@@ -652,7 +676,7 @@ AppAuth.requireAuth(function(user) {
         );
 
       })
-      .catch(function(err) {
+      .catch(function (err) {
 
         console.error(err);
 
@@ -685,14 +709,14 @@ AppAuth.requireAuth(function(user) {
   function loadPlaylistsForMove() {
 
     AppDB.getPlaylists(uid)
-      .then(function(playlists) {
+      .then(function (playlists) {
 
         allPlaylists = playlists;
 
         buildPlaylistsList(playlists);
 
       })
-      .catch(function(err) {
+      .catch(function (err) {
 
         console.error(err);
 
@@ -713,7 +737,7 @@ AppAuth.requireAuth(function(user) {
 
     container.innerHTML = '';
 
-    var filtered = playlists.filter(function(p) {
+    var filtered = playlists.filter(function (p) {
       return p.id !== playlistId;
     });
 
@@ -725,7 +749,7 @@ AppAuth.requireAuth(function(user) {
       return;
     }
 
-    filtered.forEach(function(playlist) {
+    filtered.forEach(function (playlist) {
 
       var entryCount = 0;
 
@@ -745,27 +769,27 @@ AppAuth.requireAuth(function(user) {
 
         '<div style="flex:1;text-align:left">' +
 
-          '<p style="font-weight:600;font-size:15px;color:var(--text-primary);margin-bottom:4px">' +
+        '<p style="font-weight:600;font-size:15px;color:var(--text-primary);margin-bottom:4px">' +
 
-            playlist.name +
+        playlist.name +
 
-          '</p>' +
+        '</p>' +
 
-          '<p style="font-size:13px;color:var(--text-muted)">' +
+        '<p style="font-size:13px;color:var(--text-muted)">' +
 
-            entryCount +
+        entryCount +
 
-            ' title' +
+        ' title' +
 
-            (entryCount !== 1 ? 's' : '') +
+        (entryCount !== 1 ? 's' : '') +
 
-          '</p>' +
+        '</p>' +
 
         '</div>'
 
       );
 
-      item.addEventListener('click', function() {
+      item.addEventListener('click', function () {
 
         moveEntryToPlaylist(
           currentMoveEntry.id,
@@ -788,7 +812,7 @@ AppAuth.requireAuth(function(user) {
       entryId,
       newPlaylistId
     )
-      .then(function() {
+      .then(function () {
 
         document.getElementById(
           'move-to-modal'
@@ -801,12 +825,12 @@ AppAuth.requireAuth(function(user) {
         if (card) {
           card.style.opacity = '0';
 
-          setTimeout(function() {
+          setTimeout(function () {
             card.remove();
           }, 200);
         }
 
-        allEntries = allEntries.filter(function(e) {
+        allEntries = allEntries.filter(function (e) {
           return e.id !== entryId;
         });
 
@@ -817,7 +841,7 @@ AppAuth.requireAuth(function(user) {
         );
 
       })
-      .catch(function(err) {
+      .catch(function (err) {
 
         console.error(err);
 
@@ -833,7 +857,7 @@ AppAuth.requireAuth(function(user) {
 
   document.getElementById(
     'btn-edit-entry'
-  ).addEventListener('click', function() {
+  ).addEventListener('click', function () {
 
     if (currentEditEntry) {
       openEditModal(currentEditEntry);
@@ -843,27 +867,169 @@ AppAuth.requireAuth(function(user) {
 
   document.getElementById(
     'btn-delete-entry'
-  ).addEventListener('click', function() {
+  ).addEventListener('click', function () {
 
     if (currentDeleteEntry) {
       openDeleteConfirm(currentDeleteEntry);
     }
 
   });
+  document.getElementById('btn-share-entry').addEventListener('click', function () {
+    if (currentEditEntry) {
+      document.getElementById('entry-options-modal').classList.remove('open');
+      generateShareCard(currentEditEntry);
+    }
+  });
 
+  document.getElementById('btn-close-share').addEventListener('click', function () {
+    document.getElementById('share-modal').classList.remove('open');
+  });
+
+  var shareCanvas = null;
+  document.getElementById('btn-download-share').addEventListener('click', function () {
+    if (!shareCanvas) return;
+    shareCanvas.toBlob(function (blob) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'entry-share.png';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  });
+
+  function generateShareCard(entry) {
+    var canvas = document.createElement('canvas');
+    canvas.width = 1080;
+    canvas.height = 1080;
+    var ctx = canvas.getContext('2d');
+    var isGame = entry.type === 'game';
+
+    ctx.fillStyle = '#0d0d0d';
+    ctx.fillRect(0, 0, 1080, 1080);
+
+    // Accent strip
+    ctx.fillStyle = isGame ? '#7c3aed' : '#c9a84c';
+    ctx.fillRect(0, 0, 1080, 8);
+
+    function drawText() {
+      // Title
+      ctx.fillStyle = '#f0f0f0';
+      ctx.font = 'bold 64px Inter, sans-serif';
+      ctx.textAlign = 'left';
+      var title = entry.title;
+      if (title.length > 24) title = title.slice(0, 22) + '…';
+      ctx.fillText(title, 80, 200);
+
+      // Type badge
+      ctx.font = '500 28px Inter, sans-serif';
+      ctx.fillStyle = isGame ? '#7c3aed' : '#c9a84c';
+      var typeLabel = isGame ? '🎮 Game' : entry.type === 'series' ? '📺 ' + (entry.seasonName || 'Series') : '🎬 Movie';
+      ctx.fillText(typeLabel, 80, 250);
+
+      // Rating
+      ctx.font = 'bold 80px Inter, sans-serif';
+      ctx.fillStyle = isGame ? '#7c3aed' : '#c9a84c';
+      var ratingText = '';
+      if (isGame && entry.gameRating) ratingText = entry.gameRating + '/10';
+      else if (!isGame && entry.rating) ratingText = AppUtils.ratingToEmoji(entry.rating);
+      if (ratingText) ctx.fillText(ratingText, 80, 380);
+
+      // Month / status
+      ctx.font = '500 30px Inter, sans-serif';
+      ctx.fillStyle = '#888888';
+      var meta = '';
+      if (isGame && entry.completionStatus) {
+        var stLabels = { completed: 'Completed', playing: 'Playing', dropped: 'Dropped', wishlist: 'Wishlist' };
+        meta = stLabels[entry.completionStatus] || '';
+        if (entry.playtime) meta += ' · ' + entry.playtime + 'h played';
+      } else if (entry.monthWatched) {
+        meta = AppUtils.monthName(entry.monthWatched) + ' ' + (entry.yearWatched || '');
+      }
+      if (meta) ctx.fillText(meta, 80, 440);
+
+      // Review
+      if (entry.review) {
+        ctx.font = 'italic 26px Inter, sans-serif';
+        ctx.fillStyle = '#aaaaaa';
+        var review = entry.review.length > 80 ? entry.review.slice(0, 78) + '…' : entry.review;
+        ctx.fillText('"' + review + '"', 80, 520);
+      }
+
+      // Category (games)
+      if (isGame && entry.category) {
+        ctx.font = '500 24px Inter, sans-serif';
+        ctx.fillStyle = '#555555';
+        ctx.fillText(entry.category, 80, 570);
+      }
+
+      // Branding
+      ctx.fillStyle = '#333333';
+      ctx.fillRect(0, 1040, 1080, 1);
+      ctx.font = '500 24px Inter, sans-serif';
+      ctx.fillStyle = '#555555';
+      ctx.textAlign = 'center';
+      ctx.fillText('Logged on MediaBase', 540, 1070);
+
+      // Show modal
+      canvas.style.width = '100%';
+      canvas.style.borderRadius = '8px';
+      shareCanvas = canvas;
+      var wrap = document.getElementById('share-canvas-wrap');
+      wrap.innerHTML = '';
+      wrap.appendChild(canvas);
+      document.getElementById('share-modal').classList.add('open');
+    }
+
+    var posterUrl = AppUtils.getPosterUrl(entry.poster);
+    if (posterUrl) {
+      var img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = AppUtils.getCanvasSafeUrl(posterUrl);
+      img.onload = function () {
+        // Draw poster right side
+        ctx.save();
+        ctx.beginPath();
+        roundRectPath(ctx, 640, 60, 360, isGame ? 480 : 540, 16);
+        ctx.clip();
+        ctx.drawImage(img, 640, 60, 360, isGame ? 480 : 540);
+        ctx.restore();
+        drawText();
+      };
+      img.onerror = drawText;
+    } else {
+      drawText();
+    }
+  }
+
+  function roundRectPath(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
   document.getElementById(
     'btn-move-entry'
-  ).addEventListener('click', function() {
+  ).addEventListener('click', function () {
 
     if (currentEditEntry) {
       openMoveToModal(currentEditEntry);
     }
 
   });
-
+    document.getElementById('share-modal').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('open');
+  });
   document.getElementById(
     'btn-cancel-edit'
-  ).addEventListener('click', function() {
+  ).addEventListener('click', function () {
 
     document.getElementById(
       'edit-entry-modal'
@@ -873,7 +1039,7 @@ AppAuth.requireAuth(function(user) {
 
   document.getElementById(
     'btn-save-edit'
-  ).addEventListener('click', function() {
+  ).addEventListener('click', function () {
 
     saveEditEntry();
 
@@ -881,7 +1047,7 @@ AppAuth.requireAuth(function(user) {
 
   document.getElementById(
     'btn-cancel-delete'
-  ).addEventListener('click', function() {
+  ).addEventListener('click', function () {
 
     document.getElementById(
       'delete-confirm-modal'
@@ -891,7 +1057,7 @@ AppAuth.requireAuth(function(user) {
 
   document.getElementById(
     'btn-confirm-delete'
-  ).addEventListener('click', function() {
+  ).addEventListener('click', function () {
 
     deleteCurrentEntry();
 
@@ -899,7 +1065,7 @@ AppAuth.requireAuth(function(user) {
 
   document.getElementById(
     'btn-cancel-move'
-  ).addEventListener('click', function() {
+  ).addEventListener('click', function () {
 
     document.getElementById(
       'move-to-modal'
@@ -911,7 +1077,7 @@ AppAuth.requireAuth(function(user) {
 
   document.getElementById(
     'entry-options-modal'
-  ).addEventListener('click', function(e) {
+  ).addEventListener('click', function (e) {
 
     if (e.target === this) {
 
@@ -923,7 +1089,7 @@ AppAuth.requireAuth(function(user) {
 
   document.getElementById(
     'edit-entry-modal'
-  ).addEventListener('click', function(e) {
+  ).addEventListener('click', function (e) {
 
     if (e.target === this) {
 
@@ -935,7 +1101,7 @@ AppAuth.requireAuth(function(user) {
 
   document.getElementById(
     'delete-confirm-modal'
-  ).addEventListener('click', function(e) {
+  ).addEventListener('click', function (e) {
 
     if (e.target === this) {
 
@@ -947,7 +1113,7 @@ AppAuth.requireAuth(function(user) {
 
   document.getElementById(
     'move-to-modal'
-  ).addEventListener('click', function(e) {
+  ).addEventListener('click', function (e) {
 
     if (e.target === this) {
 
@@ -961,13 +1127,14 @@ AppAuth.requireAuth(function(user) {
 
     window.location.href =
       '/add.html?playlistId=' +
-      playlistId;
+      playlistId +
+      '&type=' + (currentPlaylistType || 'media');
 
   }
 
   document.getElementById(
     'btn-back'
-  ).addEventListener('click', function() {
+  ).addEventListener('click', function () {
 
     window.location.href =
       '/home.html';
@@ -992,7 +1159,7 @@ AppAuth.requireAuth(function(user) {
 
   document.getElementById(
     'playlist-title'
-  ).addEventListener('click', function() {
+  ).addEventListener('click', function () {
 
     document.getElementById(
       'rename-input'
@@ -1010,7 +1177,7 @@ AppAuth.requireAuth(function(user) {
 
   document.getElementById(
     'btn-cancel-rename'
-  ).addEventListener('click', function() {
+  ).addEventListener('click', function () {
 
     document.getElementById(
       'rename-modal'
@@ -1020,7 +1187,7 @@ AppAuth.requireAuth(function(user) {
 
   document.getElementById(
     'btn-confirm-rename'
-  ).addEventListener('click', function() {
+  ).addEventListener('click', function () {
 
     var newName =
       document.getElementById(
@@ -1034,7 +1201,7 @@ AppAuth.requireAuth(function(user) {
       playlistId,
       newName
     )
-      .then(function() {
+      .then(function () {
 
         currentName = newName;
 
@@ -1051,7 +1218,7 @@ AppAuth.requireAuth(function(user) {
         );
 
       })
-      .catch(function(err) {
+      .catch(function (err) {
 
         console.error(err);
 

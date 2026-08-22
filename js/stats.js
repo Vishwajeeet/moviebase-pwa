@@ -21,8 +21,7 @@ AppAuth.requireAuth(function(user) {
   AppDB.getAllEntries(uid)
     .then(function(entries) {
 
-      console.log(entries);
-
+      
       allEntries = entries || [];
 
       populateYearSelect(allEntries);
@@ -182,6 +181,8 @@ AppAuth.requireAuth(function(user) {
   renderFunFacts(entries);
 
   renderDeepCuts(entries);
+
+  renderPlaytimeLeaderboard(entries);
 
   updateUIState(entries);
 
@@ -681,7 +682,35 @@ function renderFunFacts(entries) {
   });
 
 }
+function renderPlaytimeLeaderboard(entries) {
+  var wrap = document.getElementById('playtime-leaderboard');
+  if (!wrap) return;
 
+  var games = entries
+    .filter(function(e) { return e.type === 'game' && e.playtime > 0; })
+    .sort(function(a, b) { return b.playtime - a.playtime; })
+    .slice(0, 5);
+
+  if (games.length === 0) {
+    wrap.innerHTML = '<p class="text-sm text-muted">No tracked playtime yet.</p>';
+    return;
+  }
+
+  var maxHours = games[0].playtime;
+  wrap.innerHTML = games.map(function(g, i) {
+    var pct = Math.max(8, Math.round((g.playtime / maxHours) * 100));
+    return (
+      '<div class="leaderboard-row">' +
+        '<div class="leaderboard-rank">#' + (i + 1) + '</div>' +
+        '<div class="leaderboard-info">' +
+          '<div class="leaderboard-title">' + g.title + '</div>' +
+          '<div class="leaderboard-bar-track"><div class="leaderboard-bar-fill" style="width:' + pct + '%"></div></div>' +
+        '</div>' +
+        '<div class="leaderboard-hours">' + g.playtime + 'h</div>' +
+      '</div>'
+    );
+  }).join('');
+}
 function renderDeepCuts(entries) {
 
   var container =
@@ -954,227 +983,103 @@ function setupWrappedCard() {
 }
 function generateWrappedCard() {
 
-  var entries =
-    window.currentStatsEntries || [];
-
+  var entries = window.currentStatsEntries || [];
   if (entries.length === 0) {
-
-    AppUtils.showToast(
-      'No entries to generate.'
-    );
-
+    AppUtils.showToast('No entries to generate.');
     return;
-
   }
 
-  var wrap =
-    document.getElementById(
-      'canvas-wrap'
-    );
+  var wrap = document.getElementById('canvas-wrap');
+  wrap.style.display = 'block';
+  wrap.innerHTML = '';
 
-  wrap.style.display =
-    'block';
-
-  wrap.innerHTML =
-    '';
-
-  var canvas =
-    document.createElement(
-      'canvas'
-    );
-
+  var canvas = document.createElement('canvas');
   canvas.width = 1080;
-
   canvas.height = 1920;
-
-  canvas.style.width =
-    '100%';
-
-  canvas.style.borderRadius =
-    '20px';
-
+  canvas.style.width = '100%';
+  canvas.style.borderRadius = '20px';
   wrap.appendChild(canvas);
+  var ctx = canvas.getContext('2d');
 
-  var ctx =
-    canvas.getContext('2d');
+  var top = entries[0];
+  var posterUrl = top.poster ? AppUtils.getPosterUrl(top.poster) : null;
 
-  // BACKGROUND
-
-  ctx.fillStyle =
-    '#0d0d0d';
-
-  ctx.fillRect(
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  );
-
-  // TITLE
-
-  ctx.fillStyle =
-    '#f4d15c';
-
-  ctx.font =
-    'bold 72px sans-serif';
-
-  ctx.fillText(
-    'MovieBase Wrapped',
-    80,
-    140
-  );
-
-  // TOTAL TITLES
-
-  ctx.fillStyle =
-    '#ffffff';
-
-  ctx.font =
-    'bold 120px sans-serif';
-
-  ctx.fillText(
-    String(entries.length),
-    80,
-    320
-  );
-
-  ctx.font =
-    '42px sans-serif';
-
-  ctx.fillStyle =
-    '#aaaaaa';
-
-  ctx.fillText(
-    'Titles Watched',
-    80,
-    390
-  );
-
-  // HOURS
-
-  var totalMinutes =
-    entries.reduce(function(sum, e) {
-
-      return sum + (e.runtime || 0);
-
-    }, 0);
-
-  ctx.fillStyle =
-    '#ffffff';
-
-  ctx.font =
-    'bold 96px sans-serif';
-
-  ctx.fillText(
-    AppUtils.formatHours(totalMinutes),
-    80,
-    560
-  );
-
-  ctx.font =
-    '42px sans-serif';
-
-  ctx.fillStyle =
-    '#aaaaaa';
-
-  ctx.fillText(
-    'Total Watch Time',
-    80,
-    620
-  );
-
-  // TOP TITLE
-
-  var top =
-    entries[0];
-
-  ctx.fillStyle =
-    '#f4d15c';
-
-  ctx.font =
-    'bold 56px sans-serif';
-
-  ctx.fillText(
-    'Top Pick',
-    80,
-    800
-  );
-
-  ctx.fillStyle =
-    '#ffffff';
-
-  ctx.font =
-    'bold 64px sans-serif';
-
-  ctx.fillText(
-    top.title,
-    80,
-    900
-  );
-
-  ctx.font =
-    '42px sans-serif';
-
-  ctx.fillStyle =
-    '#aaaaaa';
-
-  ctx.fillText(
-    AppUtils.ratingToEmoji(top.rating)
-      + ' '
-      + top.rating
-      + '/5',
-    80,
-    970
-  );
-
-  // POSTER
-
-  if (top.poster) {
-
-    var img =
-      new Image();
-
-    img.crossOrigin =
-      'anonymous';
-
-    img.onload =
-      function() {
-
-        ctx.drawImage(
-          img,
-          80,
-          1060,
-          420,
-          620
-        );
-
-      };
-
-    img.src =
-      AppUtils.getPosterUrl(
-        top.poster
-      );
-
+  function loadPosterImg() {
+    return new Promise(function(resolve) {
+      if (!posterUrl) return resolve(null);
+      var img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function() { resolve(img); };
+      img.onerror = function() { resolve(null); };
+      img.src = AppUtils.getCanvasSafeUrl(posterUrl);
+    });
   }
 
-  // FOOTER
+  document.getElementById('btn-download').style.display = 'none';
 
-  ctx.fillStyle =
-    '#666666';
+  loadPosterImg().then(function(img) {
 
-  ctx.font =
-    '36px sans-serif';
+    // BACKGROUND — full-bleed poster or fallback color
+    ctx.fillStyle = '#0d0d0d';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillText(
-    'Generated with MovieBase',
-    80,
-    1840
-  );
+    if (img) {
+      var scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+      var dw = img.width * scale, dh = img.height * scale;
+      ctx.drawImage(img, (canvas.width - dw) / 2, (canvas.height - dh) / 2, dw, dh);
+    }
 
-  document.getElementById(
-    'btn-download'
-  ).style.display =
-    'block';
+    // DARK OVERLAY so text is readable over the poster
+    var grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grad.addColorStop(0, 'rgba(10,10,10,0.55)');
+    grad.addColorStop(0.45, 'rgba(10,10,10,0.75)');
+    grad.addColorStop(1, 'rgba(10,10,10,0.95)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // TITLE
+    ctx.fillStyle = '#f4d15c';
+    ctx.font = 'bold 72px sans-serif';
+    ctx.fillText('MovieBase Wrapped', 80, 140);
+
+    // TOTAL TITLES
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 120px sans-serif';
+    ctx.fillText(String(entries.length), 80, 320);
+    ctx.font = '42px sans-serif';
+    ctx.fillStyle = '#dddddd';
+    ctx.fillText('Titles Watched', 80, 390);
+
+    // HOURS
+    var totalMinutes = entries.reduce(function(sum, e) { return sum + (e.runtime || 0); }, 0);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 96px sans-serif';
+    ctx.fillText(AppUtils.formatHours(totalMinutes), 80, 560);
+    ctx.font = '42px sans-serif';
+    ctx.fillStyle = '#dddddd';
+    ctx.fillText('Total Watch Time', 80, 620);
+
+    // TOP TITLE
+    ctx.fillStyle = '#f4d15c';
+    ctx.font = 'bold 56px sans-serif';
+    ctx.fillText('Top Pick', 80, 1600);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 64px sans-serif';
+    ctx.fillText(top.title, 80, 1680);
+    ctx.font = '42px sans-serif';
+    ctx.fillStyle = '#dddddd';
+    var ratingLine = top.type === 'game'
+      ? (top.gameRating ? top.gameRating + ' / 10' : '')
+      : (AppUtils.ratingToEmoji(top.rating) + ' ' + top.rating + '/5');
+    ctx.fillText(ratingLine, 80, 1740);
+
+    // FOOTER
+    ctx.fillStyle = '#cccccc';
+    ctx.font = '36px sans-serif';
+    ctx.fillText('Generated with MovieBase', 80, 1840);
+
+    document.getElementById('btn-download').style.display = 'block';
+  });
 
 }
 

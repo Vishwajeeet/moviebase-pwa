@@ -1,5 +1,5 @@
 // Service Worker
-var CACHE = 'watchdiary-v2';
+var CACHE = 'watchdiary-v3';
 
 var SHELL = [
 
@@ -21,7 +21,10 @@ var SHELL = [
   '/js/home.js',
   '/js/playlist.js',
   '/js/add.js',
-  '/js/stats.js'
+  '/js/stats.js',
+  '/js/entry.js',
+  '/js/rawg.js',
+  '/entry.html'
 
 ];
 
@@ -135,14 +138,16 @@ self.addEventListener(
 
       e.respondWith(
 
-        caches.match(e.request)
-          .then(function(cached) {
-
-            return (
-              cached
-              || fetch(e.request)
-            );
-
+        fetch(e.request)
+          .then(function(res) {
+            var resClone = res.clone();
+            caches.open(CACHE).then(function(cache) {
+              cache.put(e.request, resClone);
+            });
+            return res;
+          })
+          .catch(function() {
+            return caches.match(e.request);
           })
 
       );

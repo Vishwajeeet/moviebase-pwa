@@ -45,9 +45,18 @@ window.AppUtils = {
     return months[num - 1] || '';
   },
 
-  getPosterUrl: function(path) {
+    getPosterUrl: function(path) {
     if (!path) return null;
+    if (path.startsWith('http')) return path;
     return APP_CONFIG.tmdb.posterBase + path;
+  },
+
+  // Proxies external images through a CORS-friendly service so they can
+  // be drawn onto a <canvas> and exported (RAWG's CDN has no CORS headers).
+  getCanvasSafeUrl: function(url) {
+    if (!url) return null;
+    var bare = url.replace(/^https?:\/\//, '');
+    return 'https://images.weserv.nl/?url=' + encodeURIComponent(bare);
   },
 
   debounce: function(fn, delay) {

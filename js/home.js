@@ -1,7 +1,8 @@
 // Home page logic
 var ALL_ENTRIES = [];
 var ALL_PLAYLISTS = [];
-var ACTIVE_YEAR = 'all';
+var ACTIVE_YEAR = new Date().getFullYear();
+var ACTIVE_TAB = new URLSearchParams(window.location.search).get('tab') === 'games' ? 'games' : 'media';
 AppAuth.requireAuth(function(user) {
 
   var uid = user.uid;
@@ -29,6 +30,8 @@ AppAuth.requireAuth(function(user) {
 
         ALL_ENTRIES = entries;
 
+        document.querySelector('.type-pill[data-tab="' + ACTIVE_TAB + '"]').classList.add('active');
+
         renderYearFilters(entries);
 
         applyYearFilter();
@@ -45,6 +48,11 @@ AppAuth.requireAuth(function(user) {
     });
 
   function renderStats(playlists, entries) {
+
+    entries = entries.filter(function(e) {
+      var isGame = e.type === 'game';
+      return ACTIVE_TAB === 'games' ? isGame : !isGame;
+    });
 
     var totalEntries =
       entries.length;
@@ -109,10 +117,9 @@ AppAuth.requireAuth(function(user) {
     ).textContent =
       thisMonthCount;
 
-    document.getElementById(
-      'stat-type'
-    ).textContent =
-      movieCount + ' · ' + seriesCount;
+    var gameCount = entries.filter(function(e) { return e.type === 'game'; }).length;
+    document.getElementById('stat-type').textContent =
+      ACTIVE_TAB === 'games' ? (gameCount + ' Games') : (movieCount + ' Movies · ' + seriesCount + ' Series');
 
     document.getElementById(
       'fun-fact'
@@ -205,6 +212,7 @@ function applyYearFilter() {
         function(e) {
 
           return (
+            !e.yearWatched ||
             e.yearWatched ==
             ACTIVE_YEAR
           );
@@ -232,6 +240,11 @@ function applyYearFilter() {
       );
 
     grid.innerHTML = '';
+
+    playlists = playlists.filter(function(p) {
+      var t = p.type || 'media';
+      return ACTIVE_TAB === 'games' ? t === 'game' : t !== 'game';
+    });
 
     if (playlists.length === 0) {
 
@@ -299,6 +312,11 @@ function applyYearFilter() {
         last3.push({});
       }
 
+      if (playlist.coverImage) {
+        card.dataset.hasCover = '1';
+        card.style.backgroundImage = 'url(' + playlist.coverImage + ')';
+      }
+
       card.innerHTML = (
 
         '<p class="playlist-card-name">' +
@@ -313,15 +331,35 @@ function applyYearFilter() {
 
         '<div class="mini-posters">' +
         miniPostersHTML +
-        '</div>'
+        '</div>' +
+
+        '<button class="btn-playlist-menu" data-playlist-id="' + playlist.id + '">⋮</button>'
 
       );
+
+      card.querySelector('.btn-playlist-menu').addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        openPlaylistOptions(playlist);
+      });
 
       grid.appendChild(card);
 
     });
 
   }
+
+  document.getElementById('type-pills').addEventListener('click', function(e) {
+    var btn = e.target.closest('.type-pill');
+    if (!btn) return;
+    document.querySelectorAll('.type-pill').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    ACTIVE_TAB = btn.dataset.tab === 'games' ? 'games' : 'media';
+    var url = new URL(window.location.href);
+    url.searchParams.set('tab', ACTIVE_TAB);
+    window.history.replaceState({}, '', url);
+    applyYearFilter();
+  });
 
   var createModal =
     document.getElementById(
@@ -343,6 +381,7 @@ function applyYearFilter() {
   ).addEventListener('click', function() {
 
     createModal.classList.add('open');
+    createModal.dataset.type = ACTIVE_TAB === 'games' ? 'game' : 'media';
 
   });
 
@@ -379,7 +418,7 @@ function applyYearFilter() {
       createBtn.textContent =
         'Creating...';
 
-      AppDB.createPlaylist(uid, name)
+      AppDB.createPlaylist(uid, name, createModal.dataset.type || 'media')
 
         .then(function() {
 
@@ -447,19 +486,102 @@ function applyYearFilter() {
       '/stats.html';
 
   });
+    var activePlaylist = null;
+  var optionsModal = document.getElementById('playlist-options-modal');
+  var renameInput = document.getElementById('rename-input');
 
-  document.getElementById(
-    'btn-signout'
-  ).addEventListener('click', function() {
+  function openPlaylistOptions(playlist) {
+    activePlaylist = playlist;
+    renameInput.value = playlist.name;
+    optionsModal.classList.add('open');
+  }
 
-    AppAuth.signOut()
-      .then(function() {
+  document.getElementById('btn-close-playlist-options').addEventListener('click', function () {
+    optionsModal.classList.remove('open');
+  });
 
-        window.location.href =
-          '/index.html';
+  document.getElementById('btn-save-rename').addEventListener('click', function () {
+    var name = renameInput.value.trim();
+    if (!name || !activePlaylist) return;
+    AppDB.updatePlaylistName(uid, activePlaylist.id, name).then(function () {
+      optionsModal.classList.remove('open');
+      AppUtils.showToast('Renamed ✓');
+      return Promise.all([AppDB.getPlaylists(uid), AppDB.getAllEntries(uid)]);
+    }).then(function (results) {
+      ALL_PLAYLISTS = results[0];
+      ALL_ENTRIES = results[1];
+      applyYearFilter();
+    });
+  });
 
-      });
+  document.getElementById('btn-change-cover').addEventListener('click', function () {
+    document.getElementById('cover-file-input').click();
+  });
 
+  document.getElementById('cover-file-input').addEventListener('change', function (e) {
+    var file = e.target.files[0];
+    if (!file || !activePlaylist) return;
+    var reader = new FileReader();
+    reader.onload = function (ev) {
+      var img = new Image();
+      img.onload = function () {
+        var canvas = document.createElement('canvas');
+        var maxW = 600;
+        var scale = Math.min(1, maxW / img.width);
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        var dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        AppDB.updatePlaylistCover(uid, activePlaylist.id, dataUrl).then(function () {
+          optionsModal.classList.remove('open');
+          AppUtils.showToast('Cover updated ✓');
+          return Promise.all([AppDB.getPlaylists(uid), AppDB.getAllEntries(uid)]);
+        }).then(function (results) {
+          ALL_PLAYLISTS = results[0];
+          ALL_ENTRIES = results[1];
+          applyYearFilter();
+        });
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById('btn-delete-playlist').addEventListener('click', function () {
+    optionsModal.classList.remove('open');
+    document.getElementById('delete-playlist-confirm').classList.add('open');
+  });
+
+  document.getElementById('btn-cancel-delete-playlist').addEventListener('click', function () {
+    document.getElementById('delete-playlist-confirm').classList.remove('open');
+  });
+
+  document.getElementById('btn-confirm-delete-playlist').addEventListener('click', function () {
+    if (!activePlaylist) return;
+    AppDB.deletePlaylist(uid, activePlaylist.id).then(function () {
+      document.getElementById('delete-playlist-confirm').classList.remove('open');
+      AppUtils.showToast('Playlist deleted');
+      return Promise.all([AppDB.getPlaylists(uid), AppDB.getAllEntries(uid)]);
+    }).then(function (results) {
+      ALL_PLAYLISTS = results[0];
+      ALL_ENTRIES = results[1];
+      renderYearFilters(ALL_ENTRIES);
+      applyYearFilter();
+    });
+  });
+
+  document.getElementById('btn-signout').addEventListener('click', function() {
+    document.getElementById('logout-modal').classList.add('open');
+  });
+
+  document.getElementById('btn-cancel-logout').addEventListener('click', function() {
+    document.getElementById('logout-modal').classList.remove('open');
+  });
+
+  document.getElementById('btn-confirm-logout').addEventListener('click', function() {
+    AppAuth.signOut().then(function() {
+      window.location.href = '/index.html';
+    });
   });
 
 });
