@@ -16,7 +16,8 @@ var state = {
 };
 
 state.playlistId = new URLSearchParams(window.location.search).get('playlistId');
-if (!state.playlistId) window.location.href = '/home.html';
+var forcedTypeParam = new URLSearchParams(window.location.search).get('type');
+if (!state.playlistId && !forcedTypeParam) window.location.href = '/home.html';
 
 AppAuth.requireAuth(function(user) {
   state.uid = user.uid;
@@ -37,6 +38,19 @@ function findDuplicate(r, seasonNum) {
 
 function initPage() {
   var forcedType = new URLSearchParams(window.location.search).get('type');
+
+  // Apply the tab visibility synchronously (no promise/microtask delay) when
+  // we already know the type from the URL, so there's no flash of the wrong
+  // (Movie) tab before switching to Game.
+  if (forcedType) {
+    document.querySelectorAll('.media-tab').forEach(function(btn) {
+      var isGameTab = btn.dataset.type === 'game';
+      btn.style.display = (forcedType === 'game') === isGameTab ? '' : 'none';
+    });
+    var tabsWrapSync = document.querySelector('.media-type-tabs');
+    if (tabsWrapSync) tabsWrapSync.style.display = forcedType === 'game' ? 'none' : 'flex';
+  }
+
   var typePromise = forcedType
     ? Promise.resolve(forcedType)
     : db.collection('users').doc(state.uid)

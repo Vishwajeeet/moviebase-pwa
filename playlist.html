@@ -20,6 +20,7 @@
   <div class="app-container">
 
     <main class="page">
+      <div class="brand-bar" id="brand-bar"><span>MediaBase</span></div>
 
       <header class="page-header">
 
@@ -44,8 +45,9 @@
         Tap title to rename
       </p>
 
-      <div style="display:flex;gap:8px;align-items:center;margin-bottom:16px">
-        <div class="toggle-pair" id="type-filter" style="grid-template-columns: 1fr 1fr 1fr 1fr;flex:1;margin-bottom:0">
+      <div id="filter-row-wrap" style="display:none;gap:8px;align-items:center;margin-bottom:16px">
+        <div class="toggle-pair" id="type-filter"
+          style="grid-template-columns: 1fr 1fr 1fr 1fr;flex:1;margin-bottom:0">
           <button class="toggle-btn active" data-filter="all">All</button>
           <button class="toggle-btn" data-filter="movie">🎬</button>
           <button class="toggle-btn" data-filter="series">📺</button>
@@ -54,30 +56,30 @@
         <button id="btn-layout-toggle" class="icon-btn" title="Toggle layout" style="flex-shrink:0">▦</button>
       </div>
 
-      <div id="entries-container">
-        <div class="grid-2">
-          <div class="skeleton skeleton-card"></div>
-          <div class="skeleton skeleton-card"></div>
-          <div class="skeleton skeleton-card"></div>
-          <div class="skeleton skeleton-card"></div>
-        </div>
-      </div>
+          <div id="entries-container">
+            <div class="grid-2">
+              <div class="skeleton skeleton-card"></div>
+              <div class="skeleton skeleton-card"></div>
+              <div class="skeleton skeleton-card"></div>
+              <div class="skeleton skeleton-card"></div>
+            </div>
+          </div>
 
-      <div id="empty-state" class="empty-state" style="display:none">
+          <div id="empty-state" class="empty-state" style="display:none">
 
-        <div class="empty-state-icon">
-          🎬
-        </div>
+            <div class="empty-state-icon">
+              🎬
+            </div>
 
-        <p class="empty-state-text">
-          Nothing here yet.
-        </p>
+            <p class="empty-state-text">
+              Nothing here yet.
+            </p>
 
-        <button class="btn btn-primary" style="max-width:200px;margin:0 auto" id="btn-add-empty">
-          Add something
-        </button>
+            <button class="btn btn-primary" style="max-width:200px;margin:0 auto" id="btn-add-empty">
+              Add something
+            </button>
 
-      </div>
+          </div>
 
     </main>
 
@@ -250,54 +252,60 @@
       </div>
     </div>
   </div>
-    <!-- Share Card Modal -->
-    <div class="modal-overlay" id="share-modal">
-      <div class="modal-box">
-        <p class="modal-title">Share Entry</p>
-        <div id="share-canvas-wrap" style="margin-bottom:16px;border-radius:12px;overflow:hidden"></div>
-        <div class="modal-actions">
-          <button class="btn btn-ghost" id="btn-close-share">Close</button>
-          <button class="btn btn-primary" id="btn-download-share">⬇ Download</button>
-        </div>
+  <!-- Share Card Modal -->
+  <div class="modal-overlay" id="share-modal">
+    <div class="modal-box">
+      <p class="modal-title">Share Entry</p>
+      <div id="share-canvas-wrap" style="margin-bottom:16px;border-radius:12px;overflow:hidden"></div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="btn-close-share">Close</button>
+        <button class="btn btn-primary" id="btn-download-share">⬇ Download</button>
       </div>
     </div>
+  </div>
 
-    <!-- Logout Confirm Modal -->
-    <div class="modal-overlay" id="logout-modal">
-      <div class="modal-box">
-        <p class="modal-title">Sign out?</p>
-        <p style="color:var(--text-muted);margin-bottom:24px">You'll need to sign in again to access your data.</p>
-        <div class="modal-actions">
-          <button class="btn btn-ghost" id="btn-cancel-logout">Cancel</button>
-          <button class="btn btn-danger" id="btn-confirm-logout">Sign Out</button>
-        </div>
+  <!-- Logout Confirm Modal -->
+  <div class="modal-overlay" id="logout-modal">
+    <div class="modal-box">
+      <p class="modal-title">Sign out?</p>
+      <p style="color:var(--text-muted);margin-bottom:24px">You'll need to sign in again to access your data.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="btn-cancel-logout">Cancel</button>
+        <button class="btn btn-danger" id="btn-confirm-logout">Sign Out</button>
       </div>
     </div>
-    <div id="toast" class="toast"></div>
+  </div>
+  <div id="toast" class="toast"></div>
 
-    <!-- Firebase CDN -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <!-- Firebase CDN -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
-    <!-- Shared scripts -->
-    <script src="/js/config.js"></script>
-    <script src="/js/firebase-init.js"></script>
-    <script src="/js/auth.js"></script>
-    <script src="/js/utils.js"></script>
-    <script src="/js/firestore.js"></script>
-    <script src="/js/tmdb.js"></script>
-    <script src="/js/rawg.js"></script>
+  <!-- Shared scripts -->
+  <script src="/js/config.js"></script>
+  <script src="/js/firebase-init.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/firestore.js"></script>
+  <script src="/js/tmdb.js"></script>
+  <script src="/js/rawg.js"></script>
 
-    <!-- Page script -->
-    <script src="/js/playlist.js"></script>
+  <!-- Page script -->
+  <script src="/js/playlist.js"></script>
 
-    <!-- PWA -->
+  <!-- PWA -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
     <script>
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js');
-      }
-    </script>
+    var brandBar = document.getElementById('brand-bar');
+    if (brandBar) brandBar.addEventListener('click', function () {
+      window.location.href = '/home.html';
+    });
+  </script>
 
 </body>
 

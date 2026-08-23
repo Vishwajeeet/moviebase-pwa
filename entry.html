@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,9 +9,11 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="/css/main.css">
 </head>
+
 <body>
   <div class="app-container">
     <main class="page">
+      <div class="brand-bar" id="brand-bar"><span>MediaBase</span></div>
 
       <div class="page-header">
         <button id="btn-back" class="back-btn">←</button>
@@ -29,7 +32,7 @@
   </div>
 
   <div id="toast" class="toast"></div>
-    <!-- Move to Playlist -->
+  <!-- Move to Playlist -->
   <div class="modal-overlay" id="move-modal">
     <div class="modal-box">
       <p class="modal-title">Move to Playlist</p>
@@ -75,5 +78,12 @@
       navigator.serviceWorker.register('/sw.js');
     }
   </script>
+    <script>
+    var brandBar = document.getElementById('brand-bar');
+    if (brandBar) brandBar.addEventListener('click', function () {
+      window.location.href = '/home.html';
+    });
+  </script>
 </body>
+
 </html>

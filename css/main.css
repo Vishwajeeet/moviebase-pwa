@@ -1218,3 +1218,60 @@ img { content-visibility: auto; }
 .card, .playlist-card, .stat-box { will-change: transform; }
 * { -webkit-tap-highlight-color: transparent; }
 .btn, .fab, .type-pill, .chip, .month-chip, .year-chip { -webkit-user-select: none; user-select: none; }
+.brand-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 0 6px;
+  cursor: pointer;
+  user-select: none;
+}
+.brand-bar span {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  opacity: 0.9;
+  transition: opacity 0.15s ease;
+}
+.brand-bar:active span { opacity: 0.6; }
+.poster-card {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  aspect-ratio: 2/3;
+  background: #1a1a1a;
+  flex-shrink: 0;
+  width: 140px;
+}
+.poster-card .poster-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.poster-card .poster-overlay {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 24px 10px 10px;
+  background: linear-gradient(0deg, rgba(0,0,0,0.9), transparent);
+}
+.poster-card .poster-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.poster-card .poster-sub {
+  font-size: 11px;
+  color: #ccc;
+  margin-top: 2px;
+}
+#top-picks {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}

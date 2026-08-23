@@ -61,15 +61,16 @@ AppAuth.requireAuth(function (user) {
         currentPlaylistType =
           playlistDoc.data().type || 'media';
 
+        var filterRowWrap = document.getElementById('filter-row-wrap');
         var filterRow = document.getElementById('type-filter');
         var gameChip = filterRow.querySelector('[data-filter="game"]');
         var movieChip = filterRow.querySelector('[data-filter="movie"]');
         var seriesChip = filterRow.querySelector('[data-filter="series"]');
 
         if (currentPlaylistType === 'game') {
-          filterRow.style.display = 'none';
-          filterRow.style.gridTemplateColumns = '1fr';
+          filterRowWrap.style.display = 'none';
         } else {
+          filterRowWrap.style.display = 'flex';
           gameChip.style.display = 'none';
           movieChip.style.display = '';
           seriesChip.style.display = '';
@@ -935,6 +936,25 @@ AppAuth.requireAuth(function (user) {
       var x = pad + col * (tileW + gap);
       var y = headerH + pad + row * (tileH + gap);
 
+      function drawTitleLabel() {
+        var grad = ctx.createLinearGradient(0, y + tileH - 60, 0, y + tileH);
+        grad.addColorStop(0, 'rgba(0,0,0,0)');
+        grad.addColorStop(1, 'rgba(0,0,0,0.85)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, y + tileH - 60, tileW, 60);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '600 15px Inter, sans-serif';
+        ctx.textAlign = 'left';
+        var maxWidth = tileW - 16;
+        var title = entry.title;
+        while (ctx.measureText(title).width > maxWidth && title.length > 3) {
+          title = title.slice(0, -1);
+        }
+        if (title !== entry.title) title = title.trim() + '…';
+        ctx.fillText(title, x + 8, y + tileH - 12);
+      }
+
       function drawPlaceholder() {
         ctx.fillStyle = '#1a1a1a';
         AppUtils.roundRectPath(ctx, x, y, tileW, tileH, 10);
@@ -944,6 +964,7 @@ AppAuth.requireAuth(function (user) {
         ctx.fillStyle = '#444';
         ctx.fillText(entry.type === 'game' ? '🎮' : '🎬', x + tileW / 2, y + tileH / 2 + 16);
         ctx.textAlign = 'left';
+        drawTitleLabel();
         finish();
       }
 
@@ -965,6 +986,7 @@ AppAuth.requireAuth(function (user) {
         var dw = img.width * scale, dh = img.height * scale;
         ctx.drawImage(img, x + (tileW - dw) / 2, y + (tileH - dh) / 2, dw, dh);
         ctx.restore();
+        drawTitleLabel();
         finish();
       };
       img.onerror = drawPlaceholder;
@@ -1129,218 +1151,218 @@ AppAuth.requireAuth(function (user) {
     'btn-move-entry'
   ).addEventListener('click', function () {
 
-  if (currentEditEntry) {
-    openMoveToModal(currentEditEntry);
-  }
+    if (currentEditEntry) {
+      openMoveToModal(currentEditEntry);
+    }
 
-});
-document.getElementById('share-modal').addEventListener('click', function (e) {
-  if (e.target === this) this.classList.remove('open');
-});
-document.getElementById(
-  'btn-cancel-edit'
-).addEventListener('click', function () {
+  });
+  document.getElementById('share-modal').addEventListener('click', function (e) {
+    if (e.target === this) this.classList.remove('open');
+  });
+  document.getElementById(
+    'btn-cancel-edit'
+  ).addEventListener('click', function () {
+
+    document.getElementById(
+      'edit-entry-modal'
+    ).classList.remove('open');
+
+  });
+
+  document.getElementById(
+    'btn-save-edit'
+  ).addEventListener('click', function () {
+
+    saveEditEntry();
+
+  });
+
+  document.getElementById(
+    'btn-cancel-delete'
+  ).addEventListener('click', function () {
+
+    document.getElementById(
+      'delete-confirm-modal'
+    ).classList.remove('open');
+
+  });
+
+  document.getElementById(
+    'btn-confirm-delete'
+  ).addEventListener('click', function () {
+
+    deleteCurrentEntry();
+
+  });
+
+  document.getElementById(
+    'btn-cancel-move'
+  ).addEventListener('click', function () {
+
+    document.getElementById(
+      'move-to-modal'
+    ).classList.remove('open');
+
+  });
+
+  // Close modals when clicking overlay
+
+  document.getElementById(
+    'entry-options-modal'
+  ).addEventListener('click', function (e) {
+
+    if (e.target === this) {
+
+      this.classList.remove('open');
+
+    }
+
+  });
 
   document.getElementById(
     'edit-entry-modal'
-  ).classList.remove('open');
+  ).addEventListener('click', function (e) {
 
-});
+    if (e.target === this) {
 
-document.getElementById(
-  'btn-save-edit'
-).addEventListener('click', function () {
+      this.classList.remove('open');
 
-  saveEditEntry();
+    }
 
-});
-
-document.getElementById(
-  'btn-cancel-delete'
-).addEventListener('click', function () {
+  });
 
   document.getElementById(
     'delete-confirm-modal'
-  ).classList.remove('open');
+  ).addEventListener('click', function (e) {
 
-});
+    if (e.target === this) {
 
-document.getElementById(
-  'btn-confirm-delete'
-).addEventListener('click', function () {
+      this.classList.remove('open');
 
-  deleteCurrentEntry();
+    }
 
-});
-
-document.getElementById(
-  'btn-cancel-move'
-).addEventListener('click', function () {
+  });
 
   document.getElementById(
     'move-to-modal'
-  ).classList.remove('open');
+  ).addEventListener('click', function (e) {
 
-});
+    if (e.target === this) {
 
-// Close modals when clicking overlay
+      this.classList.remove('open');
 
-document.getElementById(
-  'entry-options-modal'
-).addEventListener('click', function (e) {
+    }
 
-  if (e.target === this) {
+  });
 
-    this.classList.remove('open');
+  function goToAdd() {
 
-  }
-
-});
-
-document.getElementById(
-  'edit-entry-modal'
-).addEventListener('click', function (e) {
-
-  if (e.target === this) {
-
-    this.classList.remove('open');
+    window.location.href =
+      '/add.html?playlistId=' +
+      playlistId +
+      '&type=' + (currentPlaylistType || 'media');
 
   }
-
-});
-
-document.getElementById(
-  'delete-confirm-modal'
-).addEventListener('click', function (e) {
-
-  if (e.target === this) {
-
-    this.classList.remove('open');
-
-  }
-
-});
-
-document.getElementById(
-  'move-to-modal'
-).addEventListener('click', function (e) {
-
-  if (e.target === this) {
-
-    this.classList.remove('open');
-
-  }
-
-});
-
-function goToAdd() {
-
-  window.location.href =
-    '/add.html?playlistId=' +
-    playlistId +
-    '&type=' + (currentPlaylistType || 'media');
-
-}
-
-document.getElementById(
-  'btn-back'
-).addEventListener('click', function () {
-
-  if (document.referrer && document.referrer.indexOf(window.location.origin) === 0) {
-    window.history.back();
-  } else {
-    window.location.href = '/home.html';
-  }
-
-});
-
-document.getElementById(
-  'fab-add'
-).addEventListener(
-  'click',
-  goToAdd
-);
-
-document.getElementById(
-  'btn-add-empty'
-).addEventListener(
-  'click',
-  goToAdd
-);
-
-// Rename playlist
-
-document.getElementById(
-  'playlist-title'
-).addEventListener('click', function () {
 
   document.getElementById(
-    'rename-input'
-  ).value = currentName;
+    'btn-back'
+  ).addEventListener('click', function () {
+
+    if (document.referrer && document.referrer.indexOf(window.location.origin) === 0) {
+      window.history.back();
+    } else {
+      window.location.href = '/home.html';
+    }
+
+  });
 
   document.getElementById(
-    'rename-modal'
-  ).classList.add('open');
+    'fab-add'
+  ).addEventListener(
+    'click',
+    goToAdd
+  );
 
   document.getElementById(
-    'rename-input'
-  ).focus();
+    'btn-add-empty'
+  ).addEventListener(
+    'click',
+    goToAdd
+  );
 
-});
-
-document.getElementById(
-  'btn-cancel-rename'
-).addEventListener('click', function () {
+  // Rename playlist
 
   document.getElementById(
-    'rename-modal'
-  ).classList.remove('open');
+    'playlist-title'
+  ).addEventListener('click', function () {
 
-});
-
-document.getElementById(
-  'btn-confirm-rename'
-).addEventListener('click', function () {
-
-  var newName =
     document.getElementById(
       'rename-input'
-    ).value.trim();
+    ).value = currentName;
 
-  if (!newName) return;
+    document.getElementById(
+      'rename-modal'
+    ).classList.add('open');
 
-  AppDB.updatePlaylistName(
-    uid,
-    playlistId,
-    newName
-  )
-    .then(function () {
+    document.getElementById(
+      'rename-input'
+    ).focus();
 
-      currentName = newName;
+  });
 
+  document.getElementById(
+    'btn-cancel-rename'
+  ).addEventListener('click', function () {
+
+    document.getElementById(
+      'rename-modal'
+    ).classList.remove('open');
+
+  });
+
+  document.getElementById(
+    'btn-confirm-rename'
+  ).addEventListener('click', function () {
+
+    var newName =
       document.getElementById(
-        'playlist-title'
-      ).textContent = newName;
+        'rename-input'
+      ).value.trim();
 
-      document.getElementById(
-        'rename-modal'
-      ).classList.remove('open');
+    if (!newName) return;
 
-      AppUtils.showToast(
-        'Renamed ✓'
-      );
+    AppDB.updatePlaylistName(
+      uid,
+      playlistId,
+      newName
+    )
+      .then(function () {
 
-    })
-    .catch(function (err) {
+        currentName = newName;
 
-      console.error(err);
+        document.getElementById(
+          'playlist-title'
+        ).textContent = newName;
 
-      AppUtils.showToast(
-        'Failed to rename.'
-      );
+        document.getElementById(
+          'rename-modal'
+        ).classList.remove('open');
 
-    });
+        AppUtils.showToast(
+          'Renamed ✓'
+        );
 
-});
+      })
+      .catch(function (err) {
+
+        console.error(err);
+
+        AppUtils.showToast(
+          'Failed to rename.'
+        );
+
+      });
+
+  });
 
 });

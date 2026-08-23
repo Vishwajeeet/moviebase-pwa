@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,10 +9,13 @@
   <link rel="manifest" href="/manifest.json">
   <link rel="stylesheet" href="/css/main.css">
 </head>
+
 <body>
 
   <div class="app-container">
     <main class="page">
+
+      <div class="brand-bar" id="brand-bar"><span>MediaBase</span></div>
 
       <div id="toast" class="toast"></div>
 
@@ -28,9 +32,24 @@
           <button id="btn-series" class="media-tab" data-type="series">📺 Series</button>
           <button id="btn-game" class="media-tab" data-type="game">🎮 Game</button>
         </div>
+        <script>
+          (function () {
+            var t = new URLSearchParams(window.location.search).get('type');
+            if (!t) return;
+            document.querySelectorAll('.media-tab').forEach(function (btn) {
+              var isGameTab = btn.dataset.type === 'game';
+              btn.style.display = (t === 'game') === isGameTab ? '' : 'none';
+              btn.classList.toggle('active', (t === 'game') === isGameTab);
+            });
+            if (t === 'game') {
+              var wrap = document.querySelector('.media-type-tabs');
+              if (wrap) wrap.style.display = 'none';
+            }
+          })();
+        </script>
 
-        <input type="text" id="search-input" class="input-field"
-          placeholder="Search for a title..." style="margin-bottom:8px">
+        <input type="text" id="search-input" class="input-field" placeholder="Search for a title..."
+          style="margin-bottom:8px">
 
         <div id="search-status" class="text-sm text-muted" style="margin:8px 0"></div>
         <div id="search-results" class="results-list"></div>
@@ -95,19 +114,17 @@
             <div class="month-scroll" id="game-month-chips"></div>
 
             <label class="label" style="margin-top:4px">Hours Played (optional)</label>
-            <input type="number" id="playtime-input" class="input-field"
-              placeholder="e.g. 47" min="0" max="9999" style="margin-bottom:16px">
+            <input type="number" id="playtime-input" class="input-field" placeholder="e.g. 47" min="0" max="9999"
+              style="margin-bottom:16px">
 
-            
+
 
             <label class="label">Your Review (optional)</label>
-            <textarea id="review-input" class="input-field"
-              placeholder="What did you think?" rows="3"
+            <textarea id="review-input" class="input-field" placeholder="What did you think?" rows="3"
               style="resize:none;margin-bottom:16px"></textarea>
 
             <label class="label" id="reason-label" style="display:none">Reason for dropping (optional)</label>
-            <textarea id="reason-input" class="input-field"
-              placeholder="Why did you drop it?" rows="2"
+            <textarea id="reason-input" class="input-field" placeholder="Why did you drop it?" rows="2"
               style="display:none;resize:none;margin-bottom:16px"></textarea>
           </div>
 
@@ -136,5 +153,12 @@
       navigator.serviceWorker.register('/sw.js');
     }
   </script>
+    <script>
+    var brandBar = document.getElementById('brand-bar');
+    if (brandBar) brandBar.addEventListener('click', function () {
+      window.location.href = '/home.html';
+    });
+  </script>
 </body>
+
 </html>
