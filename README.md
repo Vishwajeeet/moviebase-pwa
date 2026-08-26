@@ -1,6 +1,6 @@
-# 🎬 Playlog
+# 🎮🎬 Playlog
 
-A personal movie and web series tracking Progressive Web App (PWA). Built to log everything you watch, organize it into playlists, rate it, and generate a Spotify Wrapped-style stats card.
+A personal movie, web series, and **game** tracking Progressive Web App (PWA). Built to log everything you watch or play, organize it into playlists, rate it, and generate a Spotify Wrapped-style stats card — separately for your watching and your gaming.
 
 **Live:** [Playlog-pwa.vercel.app](https://Playlog-pwa.vercel.app)
 
@@ -8,12 +8,17 @@ A personal movie and web series tracking Progressive Web App (PWA). Built to log
 
 ## What It Does
 
-- Search any movie or web series via TMDB API and add it to your collection
+- Search any movie or web series via TMDB, or any game via RAWG, and add it to your collection
 - For series, pick a specific season with its own poster
-- Rate everything with a 5-emoji scale (😭 🙁 😐 😊 🤩)
-- Organize your watches into named playlists
-- Filter, sort, and view stats by year and month
-- Generate a downloadable Wrapped card with your top stats
+- Rate movies/series with a 5-emoji scale (😭 🙁 😐 😊 🤩); rate games on a 1–10 scale
+- Track game status — Wishlist, Currently Playing, Completed, Dropped — each with its own auto-created playlist
+- Log hours played per game, editable any time
+- Organize everything into named playlists, with a custom cover image per playlist
+- A dedicated Games tab throughout the app (Home, Stats, Wrapped Card) — completely separate metrics from Movies & Series
+- Tap any title for a full detail page with everything you logged
+- Move an entry between playlists, or delete it, from its detail page
+- Generate a shareable image card for a single entry, an entire playlist (poster grid), or a full Wrapped recap
+- Filter, sort, and view stats by year and month — years shown are generated dynamically from your own data
 - Install directly from Chrome as a native-like app (PWA)
 - Fully synced across all your devices via Firebase
 
@@ -26,10 +31,12 @@ A personal movie and web series tracking Progressive Web App (PWA). Built to log
 | Frontend | Vanilla HTML, CSS, JavaScript |
 | Database | Firebase Firestore |
 | Auth | Firebase Authentication (Google Sign-In) |
-| Movie Data | TMDB API |
+| Movie/Series Data | TMDB API |
+| Game Data | RAWG API |
 | Hosting | Vercel |
-| PWA | Web App Manifest + Service Worker |
-| Stats Card | HTML Canvas API |
+| PWA | Web App Manifest + Service Worker (network-first for app files) |
+| Stats/Share Cards | HTML Canvas API |
+| Image proxy | images.weserv.nl (adds CORS headers so RAWG posters can be drawn to canvas) |
 
 No frameworks. No npm. No build step. Pure static files.
 
@@ -38,43 +45,63 @@ No frameworks. No npm. No build step. Pure static files.
 ## Features
 
 **Core**
-- Google Sign-In — your data is private and tied to your account
-- Search movies and TV series with live TMDB results
+- Google Sign-In (with account picker forced, so switching accounts always works) — your data is private and tied to your account
+- Search movies and TV series with live TMDB results, or games with live RAWG results
+- Category/genre for games is auto-fetched — no manual tagging
 - Season-level tracking for series (separate entry per season)
-- Emoji rating system: 😭 🙁 😐 😊 🤩
-- Month tagging for every entry — future months are blocked
+- Emoji rating system for movies/series: 😭 🙁 😐 😊 🤩
+- 1–10 numeric rating system for games
+- Month tagging for every movie/series entry — future months are blocked
+- Duplicate detection — searching for something you've already logged shows an inline "✓ Already added" tag
+
+**Games — status-driven flow**
+- Choosing **Wishlist** skips rating entirely and auto-creates/uses a "Wishlist" playlist
+- Choosing **Currently Playing** skips rating, auto-selects the current month/year, and auto-creates/uses a "Currently Playing" playlist
+- Choosing **Dropped** asks for an optional reason
+- Choosing **Completed** asks for rating, hours played, and review — and auto-creates/uses a "Completed Games" playlist
+- Editing a "Currently Playing" game offers a one-tap "Have you completed this game?" flow — checking it asks for a rating/review and moves the entry straight into Completed Games
+- Editing a game never shows the movie-only "Month Watched" field
 
 **Organization**
-- Create and rename playlists (e.g. "2026", "Horror Run", "Rewatches")
-- Grid view with posters inside each playlist
+- Create, rename, or delete playlists (deleting also removes its entries)
+- Set a custom cover image per playlist (client-resized before upload)
+- Grid view with posters inside each playlist, or a flat "all entries, newest first" view — toggle between them, defaulting to flat
 - Mini poster collage preview on playlist cards
-- Filter entries by type: All / 🎬 Movies / 📺 Series
-- Sort entries by: Date Added, Rating, Month Watched, Type
-- Move any entry to a different playlist
-- Delete an entry or edit its rating and month after adding
-- Tap any poster to see full entry details (title, rating, runtime, genre, month)
+- A Movies & Series playlist only ever offers Movie/Series search and filters; a Games playlist only ever offers Games — no cross-contamination
+- Sort/filter entries by type inside a playlist
+- Move any entry to a different (same-type) playlist from its detail page
+- Delete an entry or edit its rating, month, hours played (games), or review after adding
+- Tap any poster to open a full entry detail page (title, rating, runtime/playtime, genre, status, review, move/delete/share actions)
 
-**Stats**
-- Total titles watched and total days consumed
-- Movies vs series breakdown
-- Top genre (computed silently from TMDB data)
-- Most active month
-- Longest single watch
-- Average rating
-- Watch streak — longest consecutive months with at least one entry
-- Your 🤩 picks (top rated entries)
-- Fun facts and Deep Cuts computed from your data
-- Deep Cuts: personality insights (movie person vs binger, tough critic vs generous rater, completion rate, etc.)
+**Home**
+- A top-level Movies & Series / Games pill switch — persisted in the URL so refreshing keeps your tab
+- Stat cards (Total, Hours/Days, This Month, Completed/Movies·Series) that adapt entirely to the active tab
+- Year filter generated dynamically from your own logged years — defaults to "All"
+- A rotating fun-fact banner, tab-aware ("watched" vs "played", 5-star vs 8+/10, etc.)
+
+**Stats — fully separated by tab**
+- Movies & Series and Games each get their own complete stat grid, fun facts, deep cuts, and top picks — nothing bleeds between tabs
+- Games get: games logged, hours played, completed, currently playing, dropped, wishlist, top genre, average rating (/10), most active month, longest single session
+- Movies & Series get: titles watched, watch time, movies, series seasons, top genre, average rating, most active month, longest watch, best month (avg rating), completion rate
+- A visual Playtime Leaderboard (top 5 by hours, medal-styled) for games
+- Year dropdown includes "All Years" and defaults to it; month chips filter within a year
+- "Your Picks" and "Deep Cuts" only show for Movies & Series (they're not meaningful stats for games)
 
 **Wrapped Card**
-- Generates a 1080×1920 downloadable image
-- Shows top 3 rated posters, key stats, top genre
-- Filter by any year or month
+- Generates a 1080×1920 downloadable image, fully respecting whatever year/month/tab is currently selected on the Stats page
+- A fanned poster hero strip up top, fading into a clean data panel with a 3×2 stat grid, a Top Pick section with a real poster thumbnail, and a status/genre pill
+- Purple accent for Games, gold accent for Movies & Series
+
+**Sharing**
+- Share a single entry as a poster-background image card
+- Share an entire playlist as a responsive poster grid (auto-sizes tiles based on how many entries you have) with title labels
+- All share cards route poster images through a CORS-safe proxy so RAWG posters always render correctly, instead of failing silently
 
 **PWA**
 - Installable from Chrome on Android and desktop
 - Runs in standalone mode (no browser bar)
-- App shell cached via Service Worker
+- Network-first service worker for app files (always fetches the latest JS/CSS when online, falls back to cache only when offline) — no more stale cached bugs during development
+- App shell + core routes precached for offline support
 
 ---
 
@@ -83,27 +110,30 @@ No frameworks. No npm. No build step. Pure static files.
 ```
 /
 ├── index.html          # Login screen
-├── home.html           # Dashboard — stats + playlists
-├── playlist.html       # Individual playlist grid view
-├── add.html            # Add entry flow (search → season → rate)
-├── stats.html          # Stats and Wrapped card
-├── manifest.json       # PWA manifest
-├── sw.js               # Service Worker
+├── home.html            # Dashboard — stats + playlists, Movies/Games tab
+├── playlist.html        # Individual playlist grid/flat view
+├── add.html             # Add entry flow (search → season/status → rate)
+├── stats.html            # Stats + Wrapped card, Movies/Games tab
+├── entry.html            # Single entry detail page
+├── manifest.json         # PWA manifest
+├── sw.js                 # Service Worker (network-first)
 ├── css/
-│   └── main.css        # Single shared stylesheet
+│   └── main.css          # Single shared stylesheet
 ├── js/
-│   ├── config.js       # Firebase + TMDB config (not committed)
+│   ├── config.js          # Firebase + TMDB + RAWG config (not committed)
 │   ├── firebase-init.js
 │   ├── auth.js
 │   ├── firestore.js
 │   ├── tmdb.js
+│   ├── rawg.js
 │   ├── utils.js
 │   ├── home.js
 │   ├── playlist.js
 │   ├── add.js
-│   └── stats.js
+│   ├── stats.js
+│   └── entry.js
 └── assets/
-    └── icons/          
+    └── icons/
 ```
 
 ---
@@ -135,6 +165,10 @@ const APP_CONFIG = {
     key: "YOUR_TMDB_API_KEY",
     baseUrl: "https://api.themoviedb.org/3",
     posterBase: "https://image.tmdb.org/t/p/w500"
+  },
+  rawg: {
+    key: "YOUR_RAWG_API_KEY",
+    baseUrl: "https://api.rawg.io/api"
   }
 };
 ```
@@ -164,11 +198,16 @@ service cloud.firestore {
 - Go to Settings → API → Create (Developer)
 - Copy the v3 API key
 
-### 5. Run locally
+### 5. RAWG API key
+
+- Create a free account at [rawg.io](https://rawg.io/apidocs)
+- Copy your API key from the dashboard
+
+### 6. Run locally
 
 Open with [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) in VS Code. Do not open as a plain file — Firebase Auth requires HTTP.
 
-### 6. Deploy
+### 7. Deploy
 
 Push to GitHub and connect to [Vercel](https://vercel.com). Set framework preset to **Other**, leave build command empty.
 
@@ -183,11 +222,13 @@ All data lives under `users/{uid}/` in Firestore.
 **Playlist document:**
 ```
 name: string
+type: "media" | "game"
+coverImage: string (base64 data URL) | null
 createdAt: timestamp
 updatedAt: timestamp
 ```
 
-**Entry document:**
+**Entry document (movie/series):**
 ```
 playlistId: string
 tmdbId: number
@@ -202,6 +243,27 @@ genres: string[]
 monthWatched: number (1–12)
 yearWatched: number
 rating: number (1–5)
+review: string | null
+addedAt: timestamp
+```
+
+**Entry document (game):**
+```
+playlistId: string
+rawgId: number
+title: string
+type: "game"
+poster: string (full URL)
+releaseYear: number
+genres: string[]
+category: string | null (auto-fetched genre)
+completionStatus: "wishlist" | "playing" | "completed" | "dropped"
+gameRating: number (1–10) | null
+playtime: number (hours) | null
+monthWatched: number (1–12) | null
+yearWatched: number | null
+dropReason: string | null
+review: string | null
 addedAt: timestamp
 ```
 
@@ -211,7 +273,7 @@ addedAt: timestamp
 
 | Resource | Free Limit | Estimated Usage |
 |---|---|---|
-| Storage | 1 GB | ~6 MB over 10 years |
+| Storage | 1 GB | ~10–20 MB over 10 years (cover images are resized client-side before upload) |
 | Reads/day | 50,000 | ~200–500 per session |
 | Writes/day | 20,000 | ~5–10 per day |
 
@@ -227,8 +289,11 @@ This app will never hit Firebase's free tier limits.
 ### Playlist View
 ![Playlist View](screenshots/playlist.png)
 
-### Add Movie / Series
+### Add Movie / Series / Game
 ![Add Entry](screenshots/add.png)
+
+### Stats & Wrapped Card
+![Stats](screenshots/stats.png)
 
 ---
 

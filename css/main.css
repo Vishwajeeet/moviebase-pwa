@@ -857,8 +857,7 @@ button {
 
 /* Media type tabs (add page) */
 .media-type-tabs {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  display: flex;
   gap: 4px;
   background: #1a1a1a;
   border-radius: var(--radius-btn);
@@ -867,6 +866,7 @@ button {
 }
 
 .media-tab {
+  flex: 1;
   padding: 10px;
   border: none;
   border-radius: 6px;
