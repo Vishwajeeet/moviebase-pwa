@@ -16,7 +16,7 @@ AppAuth.requireAuth(function (user) {
   function render(e) {
     var isGame = e.type === 'game';
     var posterUrl = AppUtils.getPosterUrl(e.poster);
-    document.title = e.title + ' — MediaBase';
+    document.title = e.title + ' — Playlog';
 
     var rows = [];
     if (isGame) {
@@ -151,7 +151,7 @@ AppAuth.requireAuth(function (user) {
       if (meta) ctx.fillText(meta, 70, 985);
       ctx.font = '500 26px Inter, sans-serif';
       ctx.fillStyle = '#999999';
-      ctx.fillText('Logged on MediaBase', 70, 1040);
+      ctx.fillText('Logged on Playlog', 70, 1040);
       canvas.style.width = '100%';
       canvas.style.borderRadius = '8px';
       shareCanvas = canvas;

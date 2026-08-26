@@ -1,8 +1,8 @@
-# 🎬 MovieBase
+# 🎬 Playlog
 
 A personal movie and web series tracking Progressive Web App (PWA). Built to log everything you watch, organize it into playlists, rate it, and generate a Spotify Wrapped-style stats card.
 
-**Live:** [moviebase-pwa.vercel.app](https://moviebase-pwa.vercel.app)
+**Live:** [Playlog-pwa.vercel.app](https://Playlog-pwa.vercel.app)
 
 ---
 
@@ -113,8 +113,8 @@ No frameworks. No npm. No build step. Pure static files.
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/Vishwajeeet/moviebase-pwa.git
-cd moviebase-pwa
+git clone https://github.com/Vishwajeeet/Playlog-pwa.git
+cd Playlog-pwa
 ```
 
 ### 2. Create your config file

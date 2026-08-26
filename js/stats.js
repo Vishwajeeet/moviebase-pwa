@@ -197,18 +197,71 @@ AppAuth.requireAuth(function (user) {
 
     renderDeepCuts(entries);
 
-    document.getElementById('playtime-leaderboard').parentElement
-      ? null : null; // no-op, keeping structure
+    var isGamesTab = statsTab === 'games';
 
-    var leaderboardHeading = document.querySelector('#playtime-leaderboard').previousElementSibling;
-    if (leaderboardHeading) leaderboardHeading.style.display = statsTab === 'games' ? '' : 'none';
-    document.getElementById('playtime-leaderboard').style.display = statsTab === 'games' ? '' : 'none';
+    document.getElementById('media-stats-strip').style.display = isGamesTab ? 'none' : 'grid';
+    document.getElementById('games-stats-strip').style.display = isGamesTab ? 'grid' : 'none';
+    document.getElementById('top-picks-section').style.display = isGamesTab ? 'none' : 'block';
+    document.getElementById('deep-cuts-section').style.display = isGamesTab ? 'none' : 'block';
+    document.getElementById('leaderboard-section').style.display = isGamesTab ? 'block' : 'none';
+
+    if (isGamesTab) {
+      renderGameStats(entries);
+    }
 
     renderPlaytimeLeaderboard(entries);
 
     updateUIState(entries);
 
     window.currentStatsEntries = entries;
+
+  }
+  function renderGameStats(entries) {
+
+    document.querySelector('#g-total .stat-number').textContent = entries.length;
+
+    var totalMinutes = entries.reduce(function (sum, e) { return sum + (e.playtime || 0) * 60; }, 0);
+    document.querySelector('#g-hours .stat-number').textContent = AppUtils.formatHours(totalMinutes);
+
+    document.querySelector('#g-completed .stat-number').textContent =
+      entries.filter(function (e) { return e.completionStatus === 'completed'; }).length;
+
+    document.querySelector('#g-playing .stat-number').textContent =
+      entries.filter(function (e) { return e.completionStatus === 'playing'; }).length;
+
+    document.querySelector('#g-dropped .stat-number').textContent =
+      entries.filter(function (e) { return e.completionStatus === 'dropped'; }).length;
+
+    document.querySelector('#g-wishlist .stat-number').textContent =
+      entries.filter(function (e) { return e.completionStatus === 'wishlist'; }).length;
+
+    var genreMap = {};
+    entries.forEach(function (e) {
+      (e.genres || []).forEach(function (g) { genreMap[g] = (genreMap[g] || 0) + 1; });
+      if (e.category) genreMap[e.category] = (genreMap[e.category] || 0) + 1;
+    });
+    var topGenre = Object.keys(genreMap).sort(function (a, b) { return genreMap[b] - genreMap[a]; })[0] || '—';
+    document.querySelector('#g-genre .stat-number').textContent = topGenre;
+
+    var rated = entries.filter(function (e) { return e.gameRating; });
+    var avgRating = rated.length
+      ? (rated.reduce(function (sum, e) { return sum + e.gameRating; }, 0) / rated.length)
+      : 0;
+    document.querySelector('#g-rating .stat-number').textContent = avgRating ? avgRating.toFixed(1) : '—';
+
+    var monthMap = {};
+    entries.forEach(function (e) {
+      if (e.monthWatched) monthMap[e.monthWatched] = (monthMap[e.monthWatched] || 0) + 1;
+    });
+    var activeMonth = Object.keys(monthMap).sort(function (a, b) { return monthMap[b] - monthMap[a]; })[0];
+    document.querySelector('#g-month .stat-number').textContent = activeMonth ? AppUtils.monthShort(Number(activeMonth)) : '—';
+
+    var longest = null;
+    entries.forEach(function (e) {
+      if (!longest || (e.playtime || 0) > (longest.playtime || 0)) longest = e;
+    });
+    document.querySelector('#g-longest .stat-number').textContent =
+      (longest && longest.playtime) ? longest.title + ' (' + longest.playtime + 'h)' : '—';
 
   }
 
@@ -593,31 +646,31 @@ AppAuth.requireAuth(function (user) {
       card.className =
         'poster-card';
 
-          card.innerHTML = (
+      card.innerHTML = (
 
-      '<img ' +
-      'class="poster-img" ' +
-      'src="' +
-      AppUtils.getPosterUrl(entry.poster) +
-      '">' +
+        '<img ' +
+        'class="poster-img" ' +
+        'src="' +
+        AppUtils.getPosterUrl(entry.poster) +
+        '">' +
 
-      '<span class="badge badge-tl">' +
+        '<span class="badge badge-tl">' +
         AppUtils.ratingToEmoji(entry.rating) +
-      '</span>' +
+        '</span>' +
 
-      '<div class="poster-overlay">' +
+        '<div class="poster-overlay">' +
 
         '<div class="poster-title">' +
-          entry.title +
+        entry.title +
         '</div>' +
 
         '<div class="poster-sub">' +
-          entry.yearWatched +
+        entry.yearWatched +
         '</div>' +
 
-      '</div>'
+        '</div>'
 
-    );
+      );
 
       container.appendChild(card);
 
@@ -642,28 +695,52 @@ AppAuth.requireAuth(function (user) {
 
     }
 
+    var isGamesFacts = statsTab === 'games';
+
     var totalMinutes =
       entries.reduce(function (sum, entry) {
 
-        return sum + (entry.runtime || 0);
+        return sum + (isGamesFacts ? (entry.playtime || 0) * 60 : (entry.runtime || 0));
 
       }, 0);
 
+    var ratedEntries = isGamesFacts
+      ? entries.filter(function (e) { return e.gameRating; })
+      : entries;
+
     var avgRating =
-      entries.reduce(function (sum, entry) {
-
-        return sum + (entry.rating || 0);
-
-      }, 0) / entries.length;
+      ratedEntries.length
+        ? ratedEntries.reduce(function (sum, entry) {
+          return sum + (isGamesFacts ? entry.gameRating : (entry.rating || 0));
+        }, 0) / ratedEntries.length
+        : 0;
 
     var highestRated =
       entries.filter(function (entry) {
 
-        return entry.rating === 5;
+        return isGamesFacts ? entry.gameRating >= 9 : entry.rating === 5;
 
       }).length;
 
-    var facts = [
+    var facts = isGamesFacts ? [
+
+      '🕹️ You played for '
+      + AppUtils.formatHours(totalMinutes),
+
+      '⭐ Your average game rating is '
+      + avgRating.toFixed(1) + '/10',
+
+      '🏆 You gave '
+      + highestRated
+      + ' game'
+      + (highestRated !== 1 ? 's' : '')
+      + ' a 9+ score',
+
+      '🎮 You logged '
+      + entries.length
+      + ' total games'
+
+    ] : [
 
       '🕐 You watched for '
       + AppUtils.formatHours(
@@ -718,12 +795,14 @@ AppAuth.requireAuth(function (user) {
       return;
     }
 
+    var medals = ['🥇', '🥈', '🥉'];
     var maxHours = games[0].playtime;
     wrap.innerHTML = games.map(function (g, i) {
       var pct = Math.max(8, Math.round((g.playtime / maxHours) * 100));
+      var rankLabel = medals[i] || ('#' + (i + 1));
       return (
-        '<div class="leaderboard-row">' +
-        '<div class="leaderboard-rank">#' + (i + 1) + '</div>' +
+        '<div class="leaderboard-row' + (i === 0 ? ' leaderboard-row-top' : '') + '">' +
+        '<div class="leaderboard-rank">' + rankLabel + '</div>' +
         '<div class="leaderboard-info">' +
         '<div class="leaderboard-title">' + g.title + '</div>' +
         '<div class="leaderboard-bar-track"><div class="leaderboard-bar-fill" style="width:' + pct + '%"></div></div>' +
@@ -1012,7 +1091,8 @@ AppAuth.requireAuth(function (user) {
     }
 
     var isGames = statsTab === 'games';
-    var accent = isGames ? '#7c3aed' : '#f4d15c';
+    var accent = isGames ? '#a78bfa' : '#f4d15c';
+    var accentDim = isGames ? 'rgba(124,58,237,0.35)' : 'rgba(201,168,76,0.35)';
 
     var periodLabel = currentYear === 'all' ? 'All Time' : String(currentYear);
     if (currentMonth !== 0) periodLabel = AppUtils.monthName(currentMonth) + ' ' + currentYear;
@@ -1021,21 +1101,22 @@ AppAuth.requireAuth(function (user) {
     wrap.style.display = 'block';
     wrap.innerHTML = '';
 
+    var W = 1080, H = 1920;
     var canvas = document.createElement('canvas');
-    canvas.width = 1080;
-    canvas.height = 1920;
+    canvas.width = W;
+    canvas.height = H;
     canvas.style.width = '100%';
     canvas.style.borderRadius = '20px';
     wrap.appendChild(canvas);
     var ctx = canvas.getContext('2d');
 
-    // Pick up to 4 posters for the background collage — prefer top-rated
     var sorted = entries.slice().sort(function (a, b) {
       var ra = isGames ? (a.gameRating || 0) : (a.rating || 0);
       var rb = isGames ? (b.gameRating || 0) : (b.rating || 0);
       return rb - ra;
     });
-    var collageEntries = sorted.slice(0, 4);
+    var top = sorted[0];
+    var heroEntries = sorted.slice(0, 3);
 
     document.getElementById('btn-download').style.display = 'none';
 
@@ -1050,154 +1131,218 @@ AppAuth.requireAuth(function (user) {
       });
     }
 
-    Promise.all(collageEntries.map(function (e) {
-      return loadImg(AppUtils.getPosterUrl(e.poster));
-    })).then(function (images) {
+    function truncate(text, maxWidth) {
+      var t = text;
+      while (ctx.measureText(t).width > maxWidth && t.length > 3) t = t.slice(0, -1);
+      if (t !== text) t = t.trim() + '…';
+      return t;
+    }
 
-      // ===== BACKGROUND: 2x2 poster collage (or fewer tiles if fewer entries) =====
-      ctx.fillStyle = '#0d0d0d';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      var n = images.filter(Boolean).length || images.length;
-      var cellW = canvas.width / 2;
-      var cellH = canvas.height / 2;
-      images.forEach(function (img, i) {
-        var cx = (i % 2) * cellW;
-        var cy = Math.floor(i / 2) * cellH;
-        if (img) {
-          var scale = Math.max(cellW / img.width, cellH / img.height);
-          var dw = img.width * scale, dh = img.height * scale;
-          ctx.drawImage(img, cx + (cellW - dw) / 2, cy + (cellH - dh) / 2, dw, dh);
-        } else {
-          ctx.fillStyle = '#1a1a1a';
-          ctx.fillRect(cx, cy, cellW, cellH);
-        }
-      });
-
-      // Dark vignette so text is always readable, heavier toward the edges/bottom
-      var grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-      grad.addColorStop(0, 'rgba(8,8,8,0.55)');
-      grad.addColorStop(0.35, 'rgba(8,8,8,0.75)');
-      grad.addColorStop(0.7, 'rgba(8,8,8,0.9)');
-      grad.addColorStop(1, 'rgba(6,6,6,0.98)');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    function drawStatCard(cx, cy, cw, ch, value, label) {
+      ctx.fillStyle = 'rgba(255,255,255,0.05)';
+      AppUtils.roundRectPath(ctx, cx, cy, cw, ch, 20);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+      ctx.lineWidth = 1.5;
+      AppUtils.roundRectPath(ctx, cx, cy, cw, ch, 20);
+      ctx.stroke();
 
       ctx.fillStyle = accent;
-      ctx.fillRect(0, 0, canvas.width, 10);
+      var valText = String(value);
+      var fontSize = valText.length > 9 ? 30 : valText.length > 6 ? 36 : 44;
+      ctx.font = 'bold ' + fontSize + 'px Inter, sans-serif';
+      ctx.fillText(truncate(valText, cw - 44), cx + 22, cy + ch - 46);
 
-      ctx.textAlign = 'left';
+      ctx.fillStyle = '#999999';
+      ctx.font = '600 20px Inter, sans-serif';
+      ctx.fillText(label.toUpperCase(), cx + 22, cy + ch - 18);
+    }
 
-      // ===== HEADER =====
-      ctx.fillStyle = accent;
-      ctx.font = '700 34px Inter, sans-serif';
-      ctx.fillText((isGames ? '🎮 GAMES WRAPPED' : '🎬 WRAPPED') + ' · ' + periodLabel.toUpperCase(), 70, 110);
+    Promise.all(heroEntries.map(function (e) { return loadImg(AppUtils.getPosterUrl(e.poster)); }))
+      .then(function (heroImgs) {
+        return loadImg(AppUtils.getPosterUrl(top.poster)).then(function (topImg) {
+          return { heroImgs: heroImgs, topImg: topImg };
+        });
+      })
+      .then(function (imgs) {
 
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 100px Inter, sans-serif';
-      ctx.fillText(String(entries.length), 70, 240);
-      ctx.font = '500 36px Inter, sans-serif';
-      ctx.fillStyle = '#dddddd';
-      ctx.fillText(isGames ? 'Games Logged' : 'Titles Watched', 70, 285);
+        // ===== BASE =====
+        ctx.fillStyle = '#0b0b0d';
+        ctx.fillRect(0, 0, W, H);
 
-      // ===== STAT GRID (2x2 cards) =====
-      var totalMinutes = entries.reduce(function (sum, e) {
-        return sum + (isGames ? (e.playtime || 0) * 60 : (e.runtime || 0));
-      }, 0);
-      var totalHoursDisplay = AppUtils.formatHours(totalMinutes);
+        // ===== HERO STRIP (top ~600px): fanned-out posters =====
+        var heroH = 620;
+        ctx.save();
+        AppUtils.roundRectPath(ctx, 0, 0, W, heroH + 60, 0);
+        ctx.clip();
 
-      var genreCounts = {};
-      entries.forEach(function (e) {
-        (e.genres || []).forEach(function (g) { genreCounts[g] = (genreCounts[g] || 0) + 1; });
-        if (e.category) genreCounts[e.category] = (genreCounts[e.category] || 0) + 1;
-      });
-      var topGenre = Object.keys(genreCounts).sort(function (a, b) { return genreCounts[b] - genreCounts[a]; })[0] || '—';
-
-      var monthCounts = {};
-      entries.forEach(function (e) {
-        if (e.monthWatched) monthCounts[e.monthWatched] = (monthCounts[e.monthWatched] || 0) + 1;
-      });
-      var bestMonthNum = Object.keys(monthCounts).sort(function (a, b) { return monthCounts[b] - monthCounts[a]; })[0];
-      var bestMonth = bestMonthNum ? AppUtils.monthShort(Number(bestMonthNum)) : '—';
-
-      var completed = isGames
-        ? entries.filter(function (e) { return e.completionStatus === 'completed'; }).length
-        : entries.length;
-      var completionPct = entries.length ? Math.round((completed / entries.length) * 100) : 0;
-
-      var statCards = isGames
-        ? [
-          [totalHoursDisplay, 'Hours Played'],
-          [topGenre, 'Top Genre'],
-          [bestMonth, 'Most Active'],
-          [completionPct + '%', 'Completed']
-        ]
-        : [
-          [totalHoursDisplay, 'Watch Time'],
-          [topGenre, 'Top Genre'],
-          [bestMonth, 'Best Month'],
-          [entries.filter(function (e) { return e.type === 'series'; }).length + '', 'Series Seasons']
+        var tileW = 420, tileH = 600;
+        var positions = [
+          { x: W / 2 - tileW / 2 - 210, y: 40, rot: -0.09, z: 1 },
+          { x: W / 2 - tileW / 2, y: 10, rot: 0, z: 3 },
+          { x: W / 2 - tileW / 2 + 210, y: 40, rot: 0.09, z: 2 }
         ];
+        positions.forEach(function (pos, i) {
+          var img = imgs.heroImgs[i];
+          ctx.save();
+          ctx.translate(pos.x + tileW / 2, pos.y + tileH / 2);
+          ctx.rotate(pos.rot);
+          ctx.translate(-tileW / 2, -tileH / 2);
+          ctx.shadowColor = 'rgba(0,0,0,0.6)';
+          ctx.shadowBlur = 40;
+          ctx.shadowOffsetY = 20;
+          if (img) {
+            AppUtils.roundRectPath(ctx, 0, 0, tileW, tileH, 24);
+            ctx.clip();
+            var scale = Math.max(tileW / img.width, tileH / img.height);
+            var dw = img.width * scale, dh = img.height * scale;
+            ctx.drawImage(img, (tileW - dw) / 2, (tileH - dh) / 2, dw, dh);
+          } else {
+            ctx.fillStyle = '#1e1e1e';
+            AppUtils.roundRectPath(ctx, 0, 0, tileW, tileH, 24);
+            ctx.fill();
+          }
+          ctx.restore();
+        });
 
-      var gridTop = 350;
-      var cardW = (canvas.width - 70 * 2 - 24) / 2;
-      var cardH = 160;
-      statCards.forEach(function (card, i) {
-        var col = i % 2, row = Math.floor(i / 2);
-        var cx = 70 + col * (cardW + 24);
-        var cy = gridTop + row * (cardH + 20);
+        // fade hero into base panel
+        var fade = ctx.createLinearGradient(0, heroH - 260, 0, heroH + 60);
+        fade.addColorStop(0, 'rgba(11,11,13,0)');
+        fade.addColorStop(1, 'rgba(11,11,13,1)');
+        ctx.fillStyle = fade;
+        ctx.fillRect(0, 0, W, heroH + 60);
 
-        ctx.fillStyle = 'rgba(255,255,255,0.06)';
-        AppUtils.roundRectPath(ctx, cx, cy, cardW, cardH, 18);
-        ctx.fill();
-        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-        ctx.lineWidth = 1;
-        AppUtils.roundRectPath(ctx, cx, cy, cardW, cardH, 18);
-        ctx.stroke();
+        // subtle top scrim so header text is legible
+        var topScrim = ctx.createLinearGradient(0, 0, 0, 220);
+        topScrim.addColorStop(0, 'rgba(0,0,0,0.55)');
+        topScrim.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = topScrim;
+        ctx.fillRect(0, 0, W, 220);
+        ctx.restore();
+
+        // ===== HEADER (over hero) =====
+        ctx.textAlign = 'left';
+        ctx.fillStyle = accent;
+        ctx.font = '800 30px Inter, sans-serif';
+        ctx.fillText((isGames ? '🎮 GAMES WRAPPED' : '🎬 WRAPPED') + ' · ' + periodLabel.toUpperCase(), 60, 80);
+
+        // ===== ACCENT DIVIDER =====
+        ctx.fillStyle = accent;
+        ctx.fillRect(60, heroH + 20, 90, 8);
+
+        // ===== BIG NUMBER =====
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '800 130px Inter, sans-serif';
+        ctx.fillText(String(entries.length), 58, heroH + 175);
+        ctx.font = '500 34px Inter, sans-serif';
+        ctx.fillStyle = '#bbbbbb';
+        ctx.fillText(isGames ? 'games logged' : 'titles logged', 62, heroH + 215);
+
+        // ===== STAT CARD GRID =====
+        var totalMinutes = entries.reduce(function (sum, e) {
+          return sum + (isGames ? (e.playtime || 0) * 60 : (e.runtime || 0));
+        }, 0);
+        var totalHoursDisplay = AppUtils.formatHours(totalMinutes);
+
+        var genreCounts = {};
+        entries.forEach(function (e) {
+          (e.genres || []).forEach(function (g) { genreCounts[g] = (genreCounts[g] || 0) + 1; });
+          if (e.category) genreCounts[e.category] = (genreCounts[e.category] || 0) + 1;
+        });
+        var topGenre = Object.keys(genreCounts).sort(function (a, b) { return genreCounts[b] - genreCounts[a]; })[0] || '—';
+
+        var monthCounts = {};
+        entries.forEach(function (e) { if (e.monthWatched) monthCounts[e.monthWatched] = (monthCounts[e.monthWatched] || 0) + 1; });
+        var bestMonthNum = Object.keys(monthCounts).sort(function (a, b) { return monthCounts[b] - monthCounts[a]; })[0];
+        var bestMonth = bestMonthNum ? AppUtils.monthShort(Number(bestMonthNum)) : '—';
+
+        var ratedEntries = isGames ? entries.filter(function (e) { return e.gameRating; }) : entries.filter(function (e) { return e.rating; });
+        var avgRatingVal = ratedEntries.length
+          ? ratedEntries.reduce(function (s, e) { return s + (isGames ? e.gameRating : e.rating); }, 0) / ratedEntries.length
+          : 0;
+        var avgRatingText = avgRatingVal ? (isGames ? avgRatingVal.toFixed(1) + '/10' : avgRatingVal.toFixed(1) + '/5') : '—';
+
+        var statCards = isGames
+          ? [
+            [totalHoursDisplay, 'Hours Played'],
+            [topGenre, 'Top Genre'],
+            [bestMonth, 'Most Active'],
+            [avgRatingText, 'Avg Rating'],
+            [entries.filter(function (e) { return e.completionStatus === 'completed'; }).length + '', 'Completed'],
+            [entries.filter(function (e) { return e.completionStatus === 'playing'; }).length + '', 'In Progress']
+          ]
+          : [
+            [totalHoursDisplay, 'Watch Time'],
+            [topGenre, 'Top Genre'],
+            [bestMonth, 'Best Month'],
+            [avgRatingText, 'Avg Rating'],
+            [entries.filter(function (e) { return e.type === 'movie'; }).length + '', 'Movies'],
+            [entries.filter(function (e) { return e.type === 'series'; }).length + '', 'Series Seasons']
+          ];
+
+        var gridTop = heroH + 260;
+        var gap = 20;
+        var cardW = (W - 60 * 2 - gap * 2) / 3;
+        var cardH = 150;
+        statCards.forEach(function (card, i) {
+          var col = i % 3, row = Math.floor(i / 3);
+          var cx = 60 + col * (cardW + gap);
+          var cy = gridTop + row * (cardH + gap);
+          drawStatCard(cx, cy, cardW, cardH, card[0], card[1]);
+        });
+
+        // ===== TOP PICK (with real poster thumbnail) =====
+        var topY = gridTop + 2 * (cardH + gap) + 55;
 
         ctx.fillStyle = accent;
-        var valText = String(card[0]);
-        var fontSize = valText.length > 8 ? 34 : 46;
-        ctx.font = 'bold ' + fontSize + 'px Inter, sans-serif';
-        ctx.fillText(valText, cx + 24, cy + 70, cardW - 48);
+        ctx.font = '800 28px Inter, sans-serif';
+        ctx.fillText('⭐ TOP PICK', 60, topY);
 
-        ctx.fillStyle = '#bbbbbb';
+        var thumbW = 130, thumbH = 185;
+        var thumbX = 60, thumbY = topY + 25;
+        ctx.save();
+        AppUtils.roundRectPath(ctx, thumbX, thumbY, thumbW, thumbH, 14);
+        ctx.clip();
+        if (imgs.topImg) {
+          var s = Math.max(thumbW / imgs.topImg.width, thumbH / imgs.topImg.height);
+          var dw2 = imgs.topImg.width * s, dh2 = imgs.topImg.height * s;
+          ctx.drawImage(imgs.topImg, thumbX + (thumbW - dw2) / 2, thumbY + (thumbH - dh2) / 2, dw2, dh2);
+        } else {
+          ctx.fillStyle = '#1e1e1e';
+          ctx.fillRect(thumbX, thumbY, thumbW, thumbH);
+        }
+        ctx.restore();
+
+        var textX = thumbX + thumbW + 30;
+        var textMaxW = W - textX - 60;
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '800 46px Inter, sans-serif';
+        ctx.fillText(truncate(top.title, textMaxW), textX, thumbY + 65);
+
+        ctx.font = '500 28px Inter, sans-serif';
+        ctx.fillStyle = '#cccccc';
+        var ratingLine = isGames
+          ? (top.gameRating ? top.gameRating + '/10' : 'Unrated')
+          : (top.rating ? AppUtils.ratingToEmoji(top.rating) + ' ' + top.rating + '/5' : 'Unrated');
+        ctx.fillText(ratingLine, textX, thumbY + 110);
+
+        // small accent pill under rating
+        ctx.fillStyle = accentDim;
+        AppUtils.roundRectPath(ctx, textX, thumbY + 135, 140, 40, 20);
+        ctx.fill();
+        ctx.fillStyle = accent;
+        ctx.font = '700 20px Inter, sans-serif';
+        ctx.fillText(isGames ? (top.completionStatus || 'Logged').toUpperCase() : (top.type || '').toUpperCase(), textX + 18, thumbY + 161);
+
+        // ===== FOOTER =====
+        ctx.fillStyle = '#666666';
         ctx.font = '500 24px Inter, sans-serif';
-        ctx.fillText(card[1].toUpperCase(), cx + 24, cy + 110);
+        ctx.fillText('Generated with Playlog', 60, H - 45);
+
+        document.getElementById('btn-download').style.display = 'block';
       });
 
-      // ===== TOP PICK =====
-      var top = sorted[0];
-      var topY = gridTop + 2 * (cardH + 20) + 60;
-
-      ctx.fillStyle = accent;
-      ctx.font = '700 32px Inter, sans-serif';
-      ctx.fillText('⭐ TOP PICK', 70, topY);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 58px Inter, sans-serif';
-      var topTitle = top.title;
-      while (ctx.measureText(topTitle).width > canvas.width - 140 && topTitle.length > 3) {
-        topTitle = topTitle.slice(0, -1);
-      }
-      if (topTitle !== top.title) topTitle = topTitle.trim() + '…';
-      ctx.fillText(topTitle, 70, topY + 65);
-
-      ctx.font = '500 32px Inter, sans-serif';
-      ctx.fillStyle = '#dddddd';
-      var ratingLine = isGames
-        ? (top.gameRating ? top.gameRating + '/10' : 'Unrated')
-        : (top.rating ? AppUtils.ratingToEmoji(top.rating) + ' ' + top.rating + '/5' : 'Unrated');
-      ctx.fillText(ratingLine, 70, topY + 115);
-
-      // ===== FOOTER =====
-      ctx.fillStyle = '#999999';
-      ctx.font = '500 28px Inter, sans-serif';
-      ctx.fillText('Generated with MediaBase', 70, canvas.height - 50);
-
-      document.getElementById('btn-download').style.display = 'block';
-    });
-
-  };
+  }
 
 });

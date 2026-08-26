@@ -8,7 +8,7 @@
 
   <meta name="theme-color" content="#0d0d0d">
 
-  <title>MovieBase — Playlist</title>
+  <title>Playlog — Playlist</title>
 
   <link rel="manifest" href="/manifest.json">
 
@@ -20,7 +20,7 @@
   <div class="app-container">
 
     <main class="page">
-      <div class="brand-bar" id="brand-bar"><span>MediaBase</span></div>
+      <div class="brand-bar" id="brand-bar"><span>Playlog</span></div>
 
       <header class="page-header">
 
@@ -154,23 +154,45 @@
 
       <p class="modal-entry-title" id="edit-entry-title"></p>
 
-      <p style="font-size:12px;font-weight:600;color:var(--text-muted);margin:20px 0 12px">
-        MONTH WATCHED
-      </p>
+      <div id="edit-month-section">
+        <p style="font-size:12px;font-weight:600;color:var(--text-muted);margin:20px 0 12px">
+          MONTH WATCHED
+        </p>
 
-      <div class="month-scroll" id="edit-month-chips"></div>
+        <div class="month-scroll" id="edit-month-chips"></div>
+      </div>
 
-      <p style="font-size:12px;font-weight:600;color:var(--text-muted);margin:20px 0 12px">
+      <div id="edit-rating-label" style="font-size:12px;font-weight:600;color:var(--text-muted);margin:20px 0 12px">
         RATING
-      </p>
+      </div>
 
       <div class="emoji-row" id="edit-emoji-row"></div>
+      <div class="number-rating-row" id="edit-number-rating-row" style="display:none"></div>
 
       <div id="edit-playtime-wrap" style="display:none">
         <p style="font-size:12px;font-weight:600;color:var(--text-muted);margin:20px 0 12px">
           HOURS PLAYED
         </p>
         <input type="number" id="edit-playtime-input" class="input-field" placeholder="e.g. 24" min="0">
+      </div>
+
+      <div id="edit-complete-toggle-wrap" style="display:none;margin-top:20px">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+          <input type="checkbox" id="edit-mark-completed" style="width:18px;height:18px">
+          <span style="font-size:14px;font-weight:600">✅ Have you completed this game?</span>
+        </label>
+
+        <div id="edit-complete-extra" style="display:none;margin-top:16px">
+          <p style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:12px">
+            RATING
+          </p>
+          <div class="number-rating-row" id="edit-complete-rating-row"></div>
+
+          <p style="font-size:12px;font-weight:600;color:var(--text-muted);margin:16px 0 12px">
+            REVIEW (OPTIONAL)
+          </p>
+          <textarea id="edit-complete-review" class="input-field" rows="3" style="resize:none" placeholder="What did you think?"></textarea>
+        </div>
       </div>
 
       <div class="modal-actions">

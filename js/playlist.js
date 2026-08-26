@@ -445,9 +445,19 @@ AppAuth.requireAuth(function (user) {
       entry.monthWatched
     );
 
-    buildEditEmojiRow(
-      entry.rating
-    );
+    var isEditingGame = entry.type === 'game';
+    var isStillPlaying = isEditingGame && entry.completionStatus === 'playing';
+
+    document.getElementById('edit-month-section').style.display = isEditingGame ? 'none' : 'block';
+    document.getElementById('edit-emoji-row').style.display = isEditingGame ? 'none' : 'flex';
+    document.getElementById('edit-number-rating-row').style.display = (isEditingGame && !isStillPlaying) ? 'flex' : 'none';
+    document.getElementById('edit-rating-label').style.display = (!isEditingGame || !isStillPlaying) ? 'block' : 'none';
+
+    if (isEditingGame) {
+      buildEditNumberRatingRow(entry.gameRating);
+    } else {
+      buildEditEmojiRow(entry.rating);
+    }
 
     var ptWrap = document.getElementById('edit-playtime-wrap');
     if (entry.type === 'game') {
@@ -455,6 +465,19 @@ AppAuth.requireAuth(function (user) {
       document.getElementById('edit-playtime-input').value = entry.playtime || '';
     } else {
       ptWrap.style.display = 'none';
+    }
+
+    var completeWrap = document.getElementById('edit-complete-toggle-wrap');
+    var completeExtra = document.getElementById('edit-complete-extra');
+    var completeCheckbox = document.getElementById('edit-mark-completed');
+    completeCheckbox.checked = false;
+    completeExtra.style.display = 'none';
+    document.getElementById('edit-complete-review').value = '';
+
+    if (entry.type === 'game' && entry.completionStatus === 'playing') {
+      completeWrap.style.display = 'block';
+    } else {
+      completeWrap.style.display = 'none';
     }
 
     document.getElementById(
@@ -554,18 +577,105 @@ AppAuth.requireAuth(function (user) {
 
   }
 
+  function buildEditNumberRatingRow(selectedRating) {
+
+    var row =
+      document.getElementById(
+        'edit-number-rating-row'
+      );
+
+    row.innerHTML = '';
+
+    for (var i = 1; i <= 10; i++) {
+
+      (function (num) {
+
+        var btn = document.createElement('button');
+
+        btn.className = 'num-rating-btn';
+
+        if (num === selectedRating) {
+          btn.classList.add('selected');
+        }
+
+        btn.textContent = num;
+
+        btn.addEventListener('click', function () {
+
+          row.querySelectorAll('.num-rating-btn')
+            .forEach(function (b) {
+              b.classList.remove('selected');
+            });
+
+          btn.classList.add('selected');
+
+          currentEditEntry.gameRating = num;
+
+        });
+
+        row.appendChild(btn);
+
+      })(i);
+
+    }
+
+  }
+
   function saveEditEntry() {
 
     if (!currentEditEntry) return;
 
+    var markingCompleted =
+      currentEditEntry.type === 'game' &&
+      document.getElementById('edit-mark-completed').checked;
+
+    if (markingCompleted) {
+
+      var row = document.getElementById('edit-complete-rating-row');
+      var chosenRating = row.dataset.selected ? Number(row.dataset.selected) : null;
+      var review = document.getElementById('edit-complete-review').value.trim() || null;
+
+      AppDB.getOrCreatePlaylist(uid, 'Completed Games', 'game').then(function (newPlaylistId) {
+
+        var updateData = {
+          monthWatched: currentEditEntry.monthWatched,
+          completionStatus: 'completed',
+          gameRating: chosenRating,
+          review: review,
+          playlistId: newPlaylistId
+        };
+
+        var pt = parseInt(document.getElementById('edit-playtime-input').value);
+        updateData.playtime = isNaN(pt) ? null : pt;
+
+        return AppDB.updateEntry(uid, currentEditEntry.id, updateData);
+
+      }).then(function () {
+
+        document.getElementById('edit-entry-modal').classList.remove('open');
+        AppUtils.showToast('Marked as completed ✓');
+        loadPlaylist();
+
+      }).catch(function (err) {
+
+        console.error(err);
+        AppUtils.showToast('Failed to update.');
+
+      });
+
+      return;
+    }
+
     var updateData = {
-      monthWatched: currentEditEntry.monthWatched,
-      rating: currentEditEntry.rating
+      monthWatched: currentEditEntry.monthWatched
     };
 
     if (currentEditEntry.type === 'game') {
+      updateData.gameRating = currentEditEntry.gameRating;
       var pt = parseInt(document.getElementById('edit-playtime-input').value);
       updateData.playtime = isNaN(pt) ? null : pt;
+    } else {
+      updateData.rating = currentEditEntry.rating;
     }
 
     AppDB.updateEntry(
@@ -997,7 +1107,7 @@ AppAuth.requireAuth(function (user) {
       ctx.fillStyle = '#666666';
       ctx.font = '500 22px Inter, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('Logged on MediaBase', canvasW / 2, canvasH - 24);
+      ctx.fillText('Logged on Playlog', canvasW / 2, canvasH - 24);
 
       canvas.style.width = '100%';
       canvas.style.borderRadius = '8px';
@@ -1100,7 +1210,7 @@ AppAuth.requireAuth(function (user) {
       // Footer branding
       ctx.font = '500 26px Inter, sans-serif';
       ctx.fillStyle = '#999999';
-      ctx.fillText('Logged on MediaBase', 70, 1040);
+      ctx.fillText('Logged on Playlog', 70, 1040);
 
       canvas.style.width = '100%';
       canvas.style.borderRadius = '8px';
@@ -1159,6 +1269,34 @@ AppAuth.requireAuth(function (user) {
   document.getElementById('share-modal').addEventListener('click', function (e) {
     if (e.target === this) this.classList.remove('open');
   });
+  document.getElementById('edit-mark-completed').addEventListener('change', function () {
+    var extra = document.getElementById('edit-complete-extra');
+    extra.style.display = this.checked ? 'block' : 'none';
+    if (this.checked) {
+      buildEditCompleteRatingRow(currentEditEntry ? currentEditEntry.gameRating : null);
+    }
+  });
+
+  function buildEditCompleteRatingRow(selectedRating) {
+    var row = document.getElementById('edit-complete-rating-row');
+    row.innerHTML = '';
+    for (var i = 1; i <= 10; i++) {
+      (function (num) {
+        var btn = document.createElement('button');
+        btn.className = 'num-rating-btn';
+        if (num === selectedRating) btn.classList.add('selected');
+        btn.textContent = num;
+        btn.addEventListener('click', function () {
+          row.querySelectorAll('.num-rating-btn').forEach(function (b) { b.classList.remove('selected'); });
+          btn.classList.add('selected');
+          row.dataset.selected = num;
+        });
+        row.appendChild(btn);
+      })(i);
+    }
+    row.dataset.selected = '';
+  }
+
   document.getElementById(
     'btn-cancel-edit'
   ).addEventListener('click', function () {

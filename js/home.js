@@ -59,9 +59,11 @@ AppAuth.requireAuth(function(user) {
     var totalEntries =
       entries.length;
 
+    var isGamesTab = ACTIVE_TAB === 'games';
+
     var totalRuntime =
       entries.reduce(function(s, e) {
-        return s + (e.runtime || 0);
+        return s + (isGamesTab ? (e.playtime || 0) * 60 : (e.runtime || 0));
       }, 0);
 
     var currentMonth =
@@ -115,7 +117,9 @@ AppAuth.requireAuth(function(user) {
     ).textContent = daysDisplay;
 
     document.getElementById('stat-hours-label').textContent =
-      totalDays < 1 ? 'Hours' : 'Days';
+      isGamesTab
+        ? (totalDays < 1 ? 'Hours Played' : 'Days Played')
+        : (totalDays < 1 ? 'Hours' : 'Days');
 
     document.getElementById(
       'stat-month'

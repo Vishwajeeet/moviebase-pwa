@@ -8,7 +8,7 @@
 
   <meta name="theme-color" content="#0d0d0d">
 
-  <title>MovieBase — Stats</title>
+  <title>Playlog — Stats</title>
 
   <link rel="manifest" href="/manifest.json">
 
@@ -20,7 +20,7 @@
   <div class="app-container">
 
     <main class="page">
-      <div class="brand-bar" id="brand-bar"><span>MediaBase</span></div>
+      <div class="brand-bar" id="brand-bar"><span>Playlog</span></div>
 
       <!-- HEADER -->
 
@@ -72,9 +72,9 @@
 
         </section>
 
-        <!-- STATS GRID -->
+        <!-- STATS GRID: MOVIES & SERIES -->
 
-        <div class="stat-strip">
+        <div class="stat-strip" id="media-stats-strip">
 
           <div class="stat-box" id="s-titles">
             <div class="stat-number">—</div>
@@ -161,21 +161,82 @@
           </div>
 
         </div>
+
+        <!-- STATS GRID: GAMES -->
+
+        <div class="stat-strip" id="games-stats-strip" style="display:none">
+
+          <div class="stat-box" id="g-total">
+            <div class="stat-number">—</div>
+            <div class="stat-label">🎮 Games Logged</div>
+          </div>
+
+          <div class="stat-box" id="g-hours">
+            <div class="stat-number">—</div>
+            <div class="stat-label">⏱ Hours Played</div>
+          </div>
+
+          <div class="stat-box" id="g-completed">
+            <div class="stat-number">—</div>
+            <div class="stat-label">✅ Completed</div>
+          </div>
+
+          <div class="stat-box" id="g-playing">
+            <div class="stat-number">—</div>
+            <div class="stat-label">🕹️ Currently Playing</div>
+          </div>
+
+          <div class="stat-box stat-full" id="g-genre">
+            <div class="stat-number">—</div>
+            <div class="stat-label">Top Genre</div>
+          </div>
+
+          <div class="stat-box" id="g-rating">
+            <div class="stat-number">—</div>
+            <div class="stat-label">Avg Rating (/10)</div>
+          </div>
+
+          <div class="stat-box" id="g-month">
+            <div class="stat-number">—</div>
+            <div class="stat-label">Most Active Month</div>
+          </div>
+
+          <div class="stat-box stat-full" id="g-longest">
+            <div class="stat-number">—</div>
+            <div class="stat-label">Longest Session</div>
+          </div>
+
+          <div class="stat-box" id="g-dropped">
+            <div class="stat-number">—</div>
+            <div class="stat-label">❌ Dropped</div>
+          </div>
+
+          <div class="stat-box" id="g-wishlist">
+            <div class="stat-number">—</div>
+            <div class="stat-label">🔖 Wishlist</div>
+          </div>
+
+        </div>
+
         <!-- PLAYTIME LEADERBOARD -->
 
-        <p class="section-title" style="margin-top:28px">
-          🏆 Playtime Leaderboard
-        </p>
+        <div id="leaderboard-section">
+          <p class="section-title" style="margin-top:28px">
+            🏆 Playtime Leaderboard
+          </p>
 
-        <div id="playtime-leaderboard"></div>
+          <div id="playtime-leaderboard"></div>
+        </div>
 
         <!-- TOP PICKS -->
 
-        <p class="section-title" style="margin-top:28px">
-          Your 🤩 Picks
-        </p>
+        <div id="top-picks-section">
+          <p class="section-title" style="margin-top:28px">
+            Your 🤩 Picks
+          </p>
 
-        <div id="top-picks" class="grid-2"></div>
+          <div id="top-picks" class="grid-2"></div>
+        </div>
 
         <!-- FUN FACTS -->
 
@@ -187,11 +248,13 @@
 
         <!-- DEEP CUTS -->
 
-        <p class="section-title" style="margin-top:28px">
-          Deep Cuts
-        </p>
+        <div id="deep-cuts-section">
+          <p class="section-title" style="margin-top:28px">
+            Deep Cuts
+          </p>
 
-        <div id="deep-cuts"></div>
+          <div id="deep-cuts"></div>
+        </div>
 
         <!-- WRAPPED CARD -->
 
