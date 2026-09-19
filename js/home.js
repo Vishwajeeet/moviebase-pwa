@@ -633,7 +633,8 @@ function applyYearFilter() {
     });
   });
 
-  document.getElementById('btn-signout').addEventListener('click', function() {
+  var _so = document.getElementById('btn-signout');
+  if (_so) _so.addEventListener('click', function() {
     document.getElementById('logout-modal').classList.add('open');
   });
 

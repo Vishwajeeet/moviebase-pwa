@@ -113,3 +113,6 @@ body::after{background:linear-gradient(180deg,rgba(13,13,13,.1),#0d0d0d 70%),rad
 button.set-row{cursor:pointer;flex-wrap:nowrap}
 .set-danger b,.set-danger>span{color:#ff5a5a}
 .set-danger:active{background:rgba(255,90,90,.08)}
+.page-title,.brand-bar span,.stat-number{display:inline-block;max-width:100%;overflow:visible!important;text-overflow:clip!important;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important;color:transparent!important;transform:translateZ(0);padding-bottom:.12em}
+.page-title,.brand-bar span{background-image:linear-gradient(135deg,#fff 30%,#c9a84c)!important}
+.stat-number{background-image:linear-gradient(135deg,#f4d15c,#c9a84c)!important}
