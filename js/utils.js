@@ -61,7 +61,12 @@ window.AppUtils = {
 
     getPosterUrl: function(path) {
     if (!path) return null;
-    if (path.startsWith('http')) return path;
+    var w = arguments[1];
+    if (path.startsWith('http')) {
+      if (path.indexOf('media.rawg.io') > -1) return path.replace(/\/media\/(games|screenshots)\//, '/media/resize/' + (w && w <= 200 ? 200 : 640) + '/-/$1/');
+      return path;
+    }
+    if (w) return APP_CONFIG.tmdb.posterBase.replace('/w500', '/w' + w) + path;
     return APP_CONFIG.tmdb.posterBase + path;
   },
 

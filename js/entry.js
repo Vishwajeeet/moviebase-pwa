@@ -43,10 +43,10 @@ AppAuth.requireAuth(function (user) {
 
     document.getElementById('entry-content').innerHTML = (
       '<div class="detail-hero">' +
-        (posterUrl ? '<img class="detail-poster" src="' + posterUrl + '" alt="' + e.title + '">' : '<div class="poster-placeholder" style="height:340px;border-radius:16px">' + (isGame ? '🎮' : '🎬') + '</div>') +
+        (posterUrl ? '<img class="detail-poster" src="' + posterUrl + '" alt="' + e.title + '">' : '<div class="poster-placeholder" style="height:340px;border-radius:16px">' + (isGame ? '' : '🎬') + '</div>') +
       '</div>' +
       '<h2 style="margin:16px 0 4px">' + e.title + '</h2>' +
-      '<p class="text-sm text-muted" style="margin-bottom:20px">' + (isGame ? '🎮 Game' : e.type === 'series' ? '📺 Series' : '🎬 Movie') + '</p>' +
+      '<p class="text-sm text-muted" style="margin-bottom:20px">' + (isGame ? ' Game' : e.type === 'series' ? '📺 Series' : '🎬 Movie') + '</p>' +
       '<div class="detail-card">' + rowsHTML + '</div>' +
       '<button class="btn btn-ghost" id="btn-share" style="margin-top:20px">' +
         '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px;margin-right:6px">' +
@@ -130,7 +130,7 @@ AppAuth.requireAuth(function (user) {
       wrapText(entry.title, 70, 760, 940, 68, 2);
       ctx.font = '600 30px Inter, sans-serif';
       ctx.fillStyle = accent;
-      var typeLabel = isGame ? '🎮 Game' : entry.type === 'series' ? '📺 ' + (entry.seasonName || 'Series') : '🎬 Movie';
+      var typeLabel = isGame ? ' Game' : entry.type === 'series' ? '📺 ' + (entry.seasonName || 'Series') : '🎬 Movie';
       ctx.fillText(typeLabel, 70, 830);
       ctx.font = 'bold 84px Inter, sans-serif';
       ctx.fillStyle = accent;

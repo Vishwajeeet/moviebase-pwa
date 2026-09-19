@@ -12,6 +12,9 @@
 
   <link rel="manifest" href="/manifest.json">
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="/css/main.css">
 </head>
 
@@ -51,7 +54,7 @@
           <button class="toggle-btn active" data-filter="all">All</button>
           <button class="toggle-btn" data-filter="movie">🎬</button>
           <button class="toggle-btn" data-filter="series">📺</button>
-          <button class="toggle-btn" data-filter="game">🎮</button>
+          <button class="toggle-btn" data-filter="game"></button>
         </div>
         <button id="btn-layout-toggle" class="icon-btn" title="Toggle layout" style="flex-shrink:0">▦</button>
       </div>
@@ -179,7 +182,7 @@
       <div id="edit-complete-toggle-wrap" style="display:none;margin-top:20px">
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
           <input type="checkbox" id="edit-mark-completed" style="width:18px;height:18px">
-          <span style="font-size:14px;font-weight:600">✅ Have you completed this game?</span>
+          <span style="font-size:14px;font-weight:600"> Have you completed this game?</span>
         </label>
 
         <div id="edit-complete-extra" style="display:none;margin-top:16px">

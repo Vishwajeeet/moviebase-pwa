@@ -1,4 +1,27 @@
 // Firestore database operations for playlists and entries
+setTimeout(function () {
+  var A = window.AppDB, all = A.getAllEntries;
+  A.getAllEntries = function (uid) {
+    try {
+      var c = JSON.parse(sessionStorage.getItem('pl-entries') || 'null');
+      if (c && c.uid === uid && Date.now() - c.t < 60000) return Promise.resolve(c.data);
+    } catch (e) {}
+    return all.call(A, uid).then(function (d) {
+      try { sessionStorage.setItem('pl-entries', JSON.stringify({ uid: uid, t: Date.now(), data: d })); } catch (e) {}
+      return d;
+    });
+  };
+  ['addEntry', 'deleteEntry', 'updateEntry', 'moveEntry', 'deletePlaylist'].forEach(function (k) {
+    var f = A[k];
+    A[k] = function () {
+      return f.apply(A, arguments).then(function (r) {
+        try { sessionStorage.removeItem('pl-entries'); } catch (e) {}
+        return r;
+      });
+    };
+  });
+}, 0);
+
 window.AppDB = {
 
   createPlaylist: function(uid, name, type) {
@@ -108,11 +131,16 @@ window.AppDB = {
   },
 
   moveEntry: function(uid, entryId, newPlaylistId) {
-    return db.collection('users').doc(uid)
-      .collection('entries').doc(entryId)
-      .update({
-        playlistId: newPlaylistId,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    var map = { 'Completed Games': 'completed', 'Currently Playing': 'playing', 'Dropped Games': 'dropped', 'Wishlist': 'wishlist' };
+    return db.collection('users').doc(uid).collection('playlists').doc(newPlaylistId).get()
+      .then(function(pl) {
+        var data = {
+          playlistId: newPlaylistId,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        var st = pl.exists && map[pl.data().name];
+        if (st) data.completionStatus = st;
+        return db.collection('users').doc(uid).collection('entries').doc(entryId).update(data);
       });
   }
 

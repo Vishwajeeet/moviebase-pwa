@@ -1,7 +1,7 @@
 {
-  "name": "Watch Diary",
-  "short_name": "WatchDiary",
-  "description": "Your personal movie and series diary",
+  "name": "PlayLog",
+  "short_name": "PlayLog",
+  "description": "Your personal media diary",
   "start_url": "/home.html",
   "display": "standalone",
   "orientation": "portrait",

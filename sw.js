@@ -1,162 +1,41 @@
-// Service Worker
-var CACHE = 'watchdiary-v3';
+var CACHE = 'playlog-v4';
 
 var SHELL = [
-
-  '/index.html',
-  '/home.html',
-  '/playlist.html',
-  '/add.html',
-  '/stats.html',
-
+  '/index.html', '/home.html', '/playlist.html', '/add.html', '/stats.html', '/entry.html',
   '/css/main.css',
-
-  '/js/config.js',
-  '/js/firebase-init.js',
-  '/js/auth.js',
-  '/js/utils.js',
-  '/js/firestore.js',
-  '/js/tmdb.js',
-
-  '/js/home.js',
-  '/js/playlist.js',
-  '/js/add.js',
-  '/js/stats.js',
-  '/js/entry.js',
-  '/js/rawg.js',
-  '/entry.html'
-
+  '/js/config.js', '/js/firebase-init.js', '/js/auth.js', '/js/utils.js', '/js/firestore.js',
+  '/js/tmdb.js', '/js/rawg.js', '/js/home.js', '/js/playlist.js', '/js/add.js', '/js/stats.js', '/js/entry.js'
 ];
 
-self.addEventListener(
-  'install',
-  function(e) {
+self.addEventListener('install', function (e) {
+  e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(SHELL); }));
+  self.skipWaiting();
+});
 
-    e.waitUntil(
+self.addEventListener('activate', function (e) {
+  e.waitUntil(caches.keys().then(function (keys) {
+    return Promise.all(keys.filter(function (k) { return k !== CACHE; }).map(function (k) { return caches.delete(k); }));
+  }));
+  self.clients.claim();
+});
 
-      caches.open(CACHE)
-        .then(function(cache) {
-
-          return cache.addAll(
-            SHELL
-          );
-
-        })
-
-    );
-
-    self.skipWaiting();
-
-  }
-);
-
-self.addEventListener(
-  'activate',
-  function(e) {
-
-    e.waitUntil(
-
-      caches.keys()
-        .then(function(keys) {
-
-          return Promise.all(
-
-            keys
-              .filter(function(k) {
-
-                return k !== CACHE;
-
-              })
-              .map(function(k) {
-
-                return caches.delete(k);
-
-              })
-
-          );
-
-        })
-
-    );
-
-    self.clients.claim();
-
-  }
-);
-
-self.addEventListener(
-  'fetch',
-  function(e) {
-
-    var url =
-      e.request.url;
-
-    var isExternal = (
-
-      url.indexOf(
-        'googleapis.com'
-      ) > -1 ||
-
-      url.indexOf(
-        'gstatic.com'
-      ) > -1 ||
-
-      url.indexOf(
-        'themoviedb.org'
-      ) > -1 ||
-
-      url.indexOf(
-        'firebaseapp.com'
-      ) > -1 ||
-
-      url.indexOf(
-        'firestore.googleapis.com'
-      ) > -1 ||
-
-      url.indexOf(
-        'fonts.gstatic.com'
-      ) > -1
-
-    );
-
-    if (isExternal) {
-
-      e.respondWith(
-
-        fetch(e.request)
-          .catch(function() {
-
-            return caches.match(e.request, { ignoreSearch: true })
-              .then(function(cached) {
-                return cached || Response.error();
-              });
-
-          })
-
-      );
-
-    } else {
-
-      e.respondWith(
-
-        fetch(e.request)
-          .then(function(res) {
-            var resClone = res.clone();
-            caches.open(CACHE).then(function(cache) {
-              cache.put(e.request, resClone);
-            });
-            return res;
-          })
-          .catch(function() {
-            return caches.match(e.request, { ignoreSearch: true })
-              .then(function(cached) {
-                return cached || caches.match('/home.html');
-              });
-          })
-
-      );
-
-    }
-
-  }
-);
+self.addEventListener('fetch', function (e) {
+  var req = e.request;
+  var url = new URL(req.url);
+  if (req.method !== 'GET' || url.origin !== self.location.origin) return;
+  url.search = '';
+  e.respondWith(
+    caches.match(req, { ignoreSearch: true }).then(function (cached) {
+      var net = fetch(req).then(function (res) {
+        if (res && res.ok && !res.redirected) {
+          var copy = res.clone();
+          caches.open(CACHE).then(function (c) { c.put(url.href, copy); });
+        }
+        return res;
+      }).catch(function () {
+        return cached || caches.match('/home.html');
+      });
+      return cached || net;
+    })
+  );
+});

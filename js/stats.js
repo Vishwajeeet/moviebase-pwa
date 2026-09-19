@@ -193,7 +193,7 @@ AppAuth.requireAuth(function (user) {
 
     renderTopPicks(entries);
 
-    renderFunFacts(entries);
+    
 
     renderDeepCuts(entries);
 
@@ -214,8 +214,211 @@ AppAuth.requireAuth(function (user) {
     updateUIState(entries);
 
     window.currentStatsEntries = entries;
+    renderViz(entries);
+    updateGenLabel();
 
   }
+  var actYear = new Date().getFullYear();
+
+  function actSvg(year, w) {
+    var isG = statsTab === 'games';
+    var mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var cnt = [0,0,0,0,0,0,0,0,0,0,0,0], mx = 1;
+    allEntries.forEach(function (e) {
+      if ((e.type === 'game') !== isG || e.yearWatched != year || !e.monthWatched) return;
+      cnt[e.monthWatched - 1]++;
+    });
+    cnt.forEach(function (c) { if (c > mx) mx = c; });
+    var H = 190, pl = 30, pr = 14, pt = 24, pb = 30, pw = w - pl - pr, ph = H - pt - pb;
+    var X = function (i) { return pl + i * pw / 11; };
+    var Y = function (c) { return pt + ph - c / mx * ph; };
+    var pts = cnt.map(function (c, i) { return X(i).toFixed(1) + ',' + Y(c).toFixed(1); }).join(' ');
+    var s = '<svg width="' + w + '" height="' + H + '" viewBox="0 0 ' + w + ' ' + H + '">';
+    [0, 1].forEach(function (f) {
+      var y = pt + ph - f * ph;
+      s += '<line x1="' + pl + '" x2="' + (w - pr) + '" y1="' + y + '" y2="' + y + '" style="stroke:var(--bg-card-2)"/>' +
+        '<text x="' + (pl - 8) + '" y="' + (y + 4) + '" text-anchor="end" font-size="10" style="fill:var(--text-muted)">' + (f ? mx : 0) + '</text>';
+    });
+    s += '<polygon points="' + X(0) + ',' + (pt + ph) + ' ' + pts + ' ' + X(11) + ',' + (pt + ph) + '" style="fill:var(--vz);fill-opacity:.15"/>' +
+      '<polyline points="' + pts + '" fill="none" stroke-width="2.5" stroke-linejoin="round" style="stroke:var(--vz)"/>';
+    cnt.forEach(function (c, i) {
+      s += '<circle cx="' + X(i) + '" cy="' + Y(c) + '" r="' + (c ? 4 : 2.5) + '" style="fill:var(--vz)"><title>' + mon[i] + ' ' + year + ': ' + c + '</title></circle>';
+      if (c) s += '<text x="' + X(i) + '" y="' + (Y(c) - 9) + '" text-anchor="middle" font-size="11" style="fill:var(--text-primary)">' + c + '</text>';
+      s += '<text x="' + X(i) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="11" style="fill:var(--text-muted)">' + (w > 520 ? mon[i] : mon[i][0]) + '</text>';
+    });
+    return s + '</svg>';
+  }
+
+  function bindAct(root) {
+    var box = root.querySelector('#act-chart');
+    if (!box) return;
+    root.querySelectorAll('.act-y').forEach(function (b) {
+      b.addEventListener('click', function () {
+        actYear = Number(b.dataset.y);
+        root.querySelectorAll('.act-y').forEach(function (x) { x.classList.toggle('selected', x === b); });
+        box.innerHTML = actSvg(actYear, box.clientWidth || 300);
+      });
+    });
+  }
+
+  var donutData = [];
+
+  function genreDonut(gk, gc, entries, isG, cls) {
+    var pal = ['#c9a84c', '#e07a5f', '#81b29a', '#5aa9e6', '#b388eb'];
+    var total = 0;
+    gk.forEach(function (g) { total += gc[g]; });
+    var C = 2 * Math.PI * 70, off = 0, segs = '', leg = '';
+    donutData = gk.map(function (g) {
+      var rs = 0, rn = 0, t = 0;
+      entries.forEach(function (e) {
+        if ((e.genres || []).indexOf(g) < 0) return;
+        var r = isG ? e.gameRating : e.rating;
+        if (r) { rs += r; rn++; }
+        t += isG ? (e.playtime || 0) * 60 : (e.runtime || 0);
+      });
+      return {
+        g: g, n: gc[g], unit: isG ? 'games' : 'titles',
+        pct: Math.round(gc[g] / entries.length * 100),
+        avg: rn ? (rs / rn).toFixed(1) + (isG ? '/10' : '/5') : '—',
+        time: AppUtils.formatHours(t)
+      };
+    });
+    gk.forEach(function (g, i) {
+      var len = gc[g] / total * C;
+      segs += '<circle class="dn-seg" data-i="' + i + '" cx="100" cy="100" r="70" fill="none" stroke="' + pal[i] +
+        '" stroke-width="28" stroke-dasharray="' + Math.max(len - 3, 1) + ' ' + C + '" stroke-dashoffset="' + (-off) + '"/>';
+      off += len;
+      leg += '<span class="dn-leg" data-i="' + i + '"><i style="background:' + pal[i] + '"></i>' + g + '</span>';
+    });
+    return '<p class="section-title">Top Genres</p><div class="viz-card dn-wrap ' + cls + '">' +
+      '<div class="dn-box"><svg viewBox="0 0 200 200" class="dn-svg"><g transform="rotate(-90 100 100)">' + segs + '</g></svg>' +
+      '<div class="dn-info"><b>' + gk.length + '</b><span>Top genres</span></div></div>' +
+      '<div class="dn-legend">' + leg + '</div></div>';
+  }
+
+  function bindDonut(root) {
+    var box = root.querySelector('.dn-wrap');
+    if (!box) return;
+    var info = box.querySelector('.dn-info');
+    var idle = info.innerHTML;
+    function show(i) {
+      var d = donutData[i];
+      box.classList.add('dn-active');
+      box.querySelectorAll('[data-i]').forEach(function (n) { n.classList.toggle('on', n.dataset.i == i); });
+      info.innerHTML = '<b>' + d.g + '</b><span>' + d.n + ' ' + d.unit + ' · ' + d.pct + '%</span><span>Avg ' + d.avg + '</span><span>' + d.time + '</span>';
+    }
+    function hide() {
+      box.classList.remove('dn-active');
+      box.querySelectorAll('.on').forEach(function (n) { n.classList.remove('on'); });
+      info.innerHTML = idle;
+    }
+    box.querySelectorAll('[data-i]').forEach(function (n) {
+      n.addEventListener('mouseenter', function () { show(n.dataset.i); });
+      n.addEventListener('click', function () { show(n.dataset.i); });
+      n.addEventListener('mouseleave', hide);
+    });
+  }
+
+  function renderViz(entries) {
+    var el = document.getElementById('viz');
+    if (!el) return;
+    var isG = statsTab === 'games';
+    var cls = isG ? 'viz-g' : 'viz-m';
+    var mon = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    var v = function (e) { return isG ? (e.playtime || 0) : (e.runtime || 0); };
+    var mins = 0, rs = 0, rn = 0, longest = null, mc = {}, gc = {};
+    entries.forEach(function (e) {
+      mins += isG ? (e.playtime || 0) * 60 : (e.runtime || 0);
+      var r = isG ? e.gameRating : e.rating;
+      if (r) { rs += r; rn++; }
+      if (!longest || v(e) > v(longest)) longest = e;
+      if (e.monthWatched) mc[e.monthWatched] = (mc[e.monthWatched] || 0) + 1;
+      (e.genres || []).forEach(function (g) { gc[g] = (gc[g] || 0) + 1; });
+    });
+    var box = function (val, l) { return '<div><b>' + val + '</b><span>' + l + '</span></div>'; };
+    var html = '<div class="viz-hero ' + cls + '">' +
+      box(entries.length, isG ? 'Games' : 'Titles') +
+      box(AppUtils.formatHours(mins), isG ? 'Played' : 'Watched') +
+      box(rn ? (rs / rn).toFixed(1) : '—', 'Avg Rating') + '</div>';
+
+    var chips = [];
+    if (longest && v(longest)) chips.push((isG ? 'Longest session: ' : 'Longest watch: ') + longest.title);
+    var topM = Object.keys(mc).sort(function (a, b) { return mc[b] - mc[a]; })[0];
+    if (topM) chips.push('Most active month: ' + mon[topM - 1]);
+    html += '<div class="viz-chips">' + chips.map(function (c) { return '<span>' + c + '</span>'; }).join('') + '</div>';
+
+    // Heatmap (ignores year/month filter, tab only)
+    var hm = {}, ys = {}, max = 1;
+    allEntries.forEach(function (e) {
+      if ((e.type === 'game') !== isG || !e.yearWatched || !e.monthWatched) return;
+      var k = e.yearWatched + '-' + e.monthWatched;
+      hm[k] = (hm[k] || 0) + 1;
+      ys[e.yearWatched] = 1;
+      if (hm[k] > max) max = hm[k];
+    });
+    var years = Object.keys(ys).sort(function (a, b) { return b - a; });
+    if (false) {
+      html += '<p class="section-title">Activity</p><div class="viz-card viz-scroll ' + cls + '"><div class="viz-heat"><i></i>' +
+        mon.map(function (m) { return '<em>' + m[0] + '</em>'; }).join('');
+      years.forEach(function (y) {
+        html += '<em>' + y + '</em>';
+        for (var m = 1; m <= 12; m++) {
+          var c = hm[y + '-' + m] || 0;
+          html += '<span title="' + mon[m - 1] + ' ' + y + ': ' + c + '" style="background:' +
+            (c ? 'color-mix(in srgb,var(--vz) ' + Math.round(20 + 80 * c / max) + '%,transparent)' : 'var(--bg-card-2)') + '">' + (c || '') + '</span>';
+        }
+      });
+      html += '</div></div>';
+    }
+
+    var acy = new Date().getFullYear(), ayl = years.slice();
+    if (ayl.indexOf(String(acy)) < 0) ayl.push(String(acy));
+    if (ayl.indexOf(String(actYear)) < 0) actYear = acy;
+    ayl.sort(function (a, b) { return b - a; });
+    html += '<p class="section-title">Activity</p><div class="viz-card ' + cls + '"><div class="act-years">' +
+      ayl.map(function (y) { return '<button class="chip act-y' + (y == actYear ? ' selected' : '') + '" data-y="' + y + '">' + y + '</button>'; }).join('') +
+      '</div><div id="act-chart">' + actSvg(actYear, Math.max(280, el.clientWidth - 32)) + '</div></div>';
+
+    // Rating distribution
+    var n = isG ? 10 : 5, rc = [], em = ['😭','🙁','😐','😊','🤩'];
+    for (var i = 0; i < n; i++) rc.push(0);
+    entries.forEach(function (e) { var r = isG ? e.gameRating : e.rating; if (r >= 1 && r <= n) rc[r - 1]++; });
+    var rmax = Math.max.apply(null, rc.concat(1));
+    html += '<p class="section-title">Ratings</p><div class="viz-card viz-cols ' + cls + '">' +
+      rc.map(function (c, i) {
+        return '<div><span>' + c + '</span><i style="height:' + Math.round(c / rmax * 80) + 'px"></i><em>' + (isG ? i + 1 : em[i]) + '</em></div>';
+      }).join('') + '</div>';
+
+    // Top genres
+    var gk = Object.keys(gc).sort(function (a, b) { return gc[b] - gc[a]; }).slice(0, 5);
+    html += '<div class="viz-pair">';
+    if (gk.length) { html += genreDonut(gk, gc, entries, isG, cls); }
+    if (false) {
+      html += '<p class="section-title">Top Genres</p><div class="viz-card ' + cls + '">' +
+        gk.map(function (g) {
+          return '<div class="viz-row"><span>' + g + '</span><div><i style="width:' + Math.round(gc[g] / gc[gk[0]] * 100) + '%"></i></div><b>' + gc[g] + '</b></div>';
+        }).join('') + '</div>';
+    }
+
+    // Split bar
+    var cnt = function (f) { return entries.filter(f).length; };
+    var parts = isG
+      ? [['Completed', 'completed', '#22c55e'], ['Playing', 'playing', '#f59e0b'], ['Dropped', 'dropped', '#ef4444'], ['Wishlist', 'wishlist', '#6366f1']]
+          .map(function (p) { return [p[0], cnt(function (e) { return e.completionStatus === p[1]; }), p[2]]; })
+      : [['Movies', cnt(function (e) { return e.type === 'movie'; }), '#c9a84c'], ['Series', cnt(function (e) { return e.type === 'series'; }), '#8a7434']];
+    if (entries.length) {
+      html += '<p class="section-title">' + (isG ? 'Status' : 'Movies vs Series') + '</p><div class="viz-card"><div class="viz-split">' +
+        parts.map(function (p) { return p[1] ? '<i style="flex:' + p[1] + ';background:' + p[2] + '"></i>' : ''; }).join('') +
+        '</div><div class="viz-legend">' +
+        parts.map(function (p) { return '<span><i style="background:' + p[2] + '"></i>' + p[0] + ' ' + p[1] + '</span>'; }).join('') +
+        '</div></div>';
+    }
+    html += '</div>';
+    el.innerHTML = html;
+    bindAct(el);
+    bindDonut(el);
+  }
+
   function renderGameStats(entries) {
 
     document.querySelector('#g-total .stat-number').textContent = entries.length;
@@ -538,7 +741,7 @@ AppAuth.requireAuth(function (user) {
       var month = entry.monthWatched;
 
       if (month) {
-        monthsWithEntries[month] = true;
+        monthsWithEntries[(entry.yearWatched || 0) * 12 + month] = true;
       }
 
     });
@@ -555,8 +758,8 @@ AppAuth.requireAuth(function (user) {
     document.querySelector(
       '#s-completion-rate .stat-number'
     ).textContent =
-      completionMonths + '/12 (' +
-      completionPercent + '%)';
+      completionMonths + (currentYear === 'all' ? '' : '/12');
+      
 
   }
 
@@ -724,7 +927,7 @@ AppAuth.requireAuth(function (user) {
 
     var facts = isGamesFacts ? [
 
-      '🕹️ You played for '
+      ' You played for '
       + AppUtils.formatHours(totalMinutes),
 
       '⭐ Your average game rating is '
@@ -736,7 +939,7 @@ AppAuth.requireAuth(function (user) {
       + (highestRated !== 1 ? 's' : '')
       + ' a 9+ score',
 
-      '🎮 You logged '
+      ' You logged '
       + entries.length
       + ' total games'
 
@@ -799,7 +1002,7 @@ AppAuth.requireAuth(function (user) {
     var maxHours = games[0].playtime;
     wrap.innerHTML = games.map(function (g, i) {
       var pct = Math.max(8, Math.round((g.playtime / maxHours) * 100));
-      var rankLabel = medals[i] || ('#' + (i + 1));
+      var rankLabel = '#' + (i + 1);
       return (
         '<div class="leaderboard-row' + (i === 0 ? ' leaderboard-row-top' : '') + '">' +
         '<div class="leaderboard-rank">' + rankLabel + '</div>' +
@@ -843,7 +1046,7 @@ AppAuth.requireAuth(function (user) {
 
     sortedByMonth.forEach(function (e) {
       if (e.monthWatched) {
-        months[e.monthWatched] = true;
+        months[(e.yearWatched || 0) * 12 + e.monthWatched] = true;
       }
     });
 
@@ -1049,7 +1252,7 @@ AppAuth.requireAuth(function (user) {
       'click',
       function () {
 
-        generateWrappedCard();
+        cardStyle === 'aesthetic' ? generateAestheticCard() : generateWrappedCard2();
 
       }
     );
@@ -1069,7 +1272,7 @@ AppAuth.requireAuth(function (user) {
           document.createElement('a');
 
         link.download =
-          'moviebase-wrapped.png';
+          'playlog-wrapped.png';
 
         link.href =
           canvas.toDataURL(
@@ -1082,6 +1285,311 @@ AppAuth.requireAuth(function (user) {
     );
 
   }
+  var cardStyle = 'detailed';
+  document.querySelectorAll('#card-style .toggle-btn').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('#card-style .toggle-btn').forEach(function (x) { x.classList.remove('active'); });
+      b.classList.add('active');
+      cardStyle = b.dataset.style;
+      if (document.getElementById('canvas-wrap').style.display === 'block') document.getElementById('btn-generate').click();
+    });
+  });
+
+  function updateGenLabel() {
+    var b = document.getElementById('btn-generate');
+    if (!b) return;
+    var p = currentYear === 'all' ? 'All Time' : String(currentYear);
+    if (currentMonth !== 0) p = AppUtils.monthName(currentMonth) + (currentYear === 'all' ? '' : ' ' + currentYear);
+    b.textContent = '✨ Generate Wrapped · ' + p;
+  }
+
+  function generateAestheticCard() {
+    var entries = window.currentStatsEntries || [];
+    if (!entries.length) { AppUtils.showToast('No entries to generate.'); return; }
+    var G = statsTab === 'games';
+    var C = G
+      ? { bg: '#7c5cff', panel: '#1f1f22', ink: '#ffffff', text: '#f2f2f2', mute: '#9a9aa2' }
+      : { bg: '#e0b93a', panel: '#f1efe6', ink: '#151515', text: '#151515', mute: '#6b675c' };
+    var lab = currentYear === 'all' ? 'ALL TIME' : String(currentYear);
+    if (currentMonth !== 0) lab = AppUtils.monthShort(currentMonth).toUpperCase() + (currentYear === 'all' ? '' : ' ' + currentYear);
+
+    var wrap = document.getElementById('canvas-wrap');
+    wrap.style.display = 'block'; wrap.innerHTML = '';
+    var W = 1080, H = 1920;
+    var canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    canvas.style.width = '100%'; canvas.style.borderRadius = '20px';
+    wrap.appendChild(canvas);
+    var ctx = canvas.getContext('2d');
+    document.getElementById('btn-download').style.display = 'none';
+
+    var rate = function (e) { return (G ? e.gameRating : e.rating) || 0; };
+    var vol = function (e) { return G ? (e.playtime || 0) : (e.runtime || 0); };
+    var pool = G ? entries.filter(function (e) { return e.completionStatus === 'completed' && e.gameRating; }) : [];
+    if (!pool.length) pool = entries.filter(function (e) { return rate(e); });
+    if (!pool.length) pool = entries;
+    var top = pool.slice().sort(function (a, b) { return rate(b) - rate(a) || vol(b) - vol(a); }).slice(0, 5);
+
+    var gc = {};
+    entries.forEach(function (e) {
+      var gs = (e.genres && e.genres.length) ? e.genres : (e.category ? [e.category] : []);
+      gs.forEach(function (g) { gc[g] = (gc[g] || 0) + 1; });
+    });
+    var gk = Object.keys(gc).sort(function (a, b) { return gc[b] - gc[a]; }).slice(0, 5);
+
+    var mins = entries.reduce(function (s, e) { return s + (G ? (e.playtime || 0) * 60 : (e.runtime || 0)); }, 0);
+    var rated = entries.filter(function (e) { return rate(e); });
+    var avg = rated.length ? rated.reduce(function (s, e) { return s + rate(e); }, 0) / rated.length : 0;
+
+    function trunc(t, mw) {
+      var s = t;
+      while (ctx.measureText(s).width > mw && s.length > 3) s = s.slice(0, -1);
+      return s !== t ? s.trim() + '…' : s;
+    }
+    function loadImg(url) {
+      return new Promise(function (res) {
+        if (!url) return res(null);
+        var im = new Image(); im.crossOrigin = 'anonymous';
+        im.onload = function () { res(im); }; im.onerror = function () { res(null); };
+        im.src = AppUtils.getCanvasSafeUrl(url);
+      });
+    }
+
+    Promise.all(['800 60px Inter', '700 34px Inter', '500 26px Inter'].map(function (f) {
+      return document.fonts.load(f).catch(function () {});
+    })).then(function () {
+      return loadImg(AppUtils.getPosterUrl(top[0].poster));
+    }).then(function (img) {
+      ctx.textAlign = 'left';
+      ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, 1040);
+      ctx.fillStyle = C.panel; ctx.fillRect(0, 1040, W, H - 1040);
+
+      // checker frame
+      var fx = 350, fy = 90, cs = 31;
+      for (var r = 0; r < 29; r++) for (var c = 0; c < 20; c++) {
+        ctx.fillStyle = (r + c) % 2 ? '#f1efe6' : '#111111';
+        ctx.fillRect(fx + c * cs, fy + r * cs, cs, cs);
+      }
+      // poster
+      var ix = 380, iy = 120, iw = 560, ih = 839;
+      ctx.fillStyle = '#f1efe6'; ctx.fillRect(ix - 6, iy - 6, iw + 12, ih + 12);
+      ctx.save();
+      ctx.beginPath(); ctx.rect(ix, iy, iw, ih); ctx.clip();
+      if (img) {
+        var s = Math.max(iw / img.width, ih / img.height);
+        ctx.drawImage(img, ix + (iw - img.width * s) / 2, iy + (ih - img.height * s) / 2, img.width * s, img.height * s);
+      } else { ctx.fillStyle = '#1e1e1e'; ctx.fillRect(ix, iy, iw, ih); }
+      ctx.restore();
+
+      // rotated period text
+      var size = 250;
+      ctx.font = '800 ' + size + 'px Inter, sans-serif';
+      var mw = ctx.measureText(lab).width;
+      if (mw > 860) size = Math.floor(size * 860 / mw);
+      ctx.font = '800 ' + size + 'px Inter, sans-serif';
+      ctx.save();
+      ctx.translate(270, 990); ctx.rotate(-Math.PI / 2);
+      ctx.fillStyle = C.ink; ctx.fillText(lab, 0, 0);
+      ctx.restore();
+      ctx.fillStyle = C.ink; ctx.font = '800 28px Inter, sans-serif';
+      ctx.fillText('PLAYLOG', 60, 80);
+
+      // columns
+      var y0 = 1130;
+      ctx.fillStyle = C.mute; ctx.font = '500 26px Inter, sans-serif';
+      ctx.fillText(G ? 'Top Games' : 'Top Titles', 80, y0);
+      ctx.fillText('Top Genres', 580, y0);
+      ctx.fillStyle = C.text; ctx.font = '700 34px Inter, sans-serif';
+      top.forEach(function (e, i) { ctx.fillText((i + 1) + '  ' + trunc(e.title, 380), 80, y0 + 60 + i * 58); });
+      gk.forEach(function (g, i) { ctx.fillText((i + 1) + '  ' + trunc(g, 380), 580, y0 + 60 + i * 58); });
+
+      // big stats
+      var sy = 1530;
+      ctx.fillStyle = C.mute; ctx.font = '500 26px Inter, sans-serif';
+      ctx.fillText(G ? 'Hours Played' : 'Hours Watched', 80, sy);
+      ctx.fillText('Avg Rating', 580, sy);
+      ctx.fillStyle = C.text; ctx.font = '800 76px Inter, sans-serif';
+      ctx.fillText(trunc(AppUtils.formatHours(mins), 440), 80, sy + 90);
+      ctx.fillText(avg ? avg.toFixed(1) + (G ? '/10' : '/5') : '—', 580, sy + 90);
+
+      // footer
+      ctx.font = '800 30px Inter, sans-serif';
+      ctx.fillText('PLAYLOG', 80, 1850);
+      ctx.textAlign = 'right';
+      ctx.fillText('WRAPPED · ' + lab, 1000, 1850);
+      ctx.textAlign = 'left';
+
+      document.getElementById('btn-download').style.display = 'block';
+    });
+  }
+
+  function generateWrappedCard2() {
+    var entries = window.currentStatsEntries || [];
+    if (!entries.length) { AppUtils.showToast('No entries to generate.'); return; }
+    var G = statsTab === 'games';
+    var accent = G ? '#a78bfa' : '#f4d15c';
+    var dim = G ? 'rgba(124,58,237,0.35)' : 'rgba(201,168,76,0.35)';
+    var period = currentYear === 'all' ? 'All Time' : String(currentYear);
+    if (currentMonth !== 0) period = AppUtils.monthName(currentMonth) + (currentYear === 'all' ? '' : ' ' + currentYear);
+
+    var wrap = document.getElementById('canvas-wrap');
+    wrap.style.display = 'block'; wrap.innerHTML = '';
+    var W = 1080, H = 1920;
+    var canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    canvas.style.width = '100%'; canvas.style.borderRadius = '20px';
+    wrap.appendChild(canvas);
+    var ctx = canvas.getContext('2d');
+    document.getElementById('btn-download').style.display = 'none';
+
+    var rate = function (e) { return (G ? e.gameRating : e.rating) || 0; };
+    var vol = function (e) { return G ? (e.playtime || 0) : (e.runtime || 0); };
+    var pool = G ? entries.filter(function (e) { return e.completionStatus === 'completed' && e.gameRating; }) : [];
+    if (!pool.length) pool = entries.filter(function (e) { return rate(e); });
+    if (!pool.length) pool = entries;
+    var top = pool.slice().sort(function (a, b) { return rate(b) - rate(a) || vol(b) - vol(a); }).slice(0, 3);
+
+    function loadImg(url) {
+      return new Promise(function (res) {
+        if (!url) return res(null);
+        var im = new Image(); im.crossOrigin = 'anonymous';
+        im.onload = function () { res(im); }; im.onerror = function () { res(null); };
+        im.src = AppUtils.getCanvasSafeUrl(url);
+      });
+    }
+    function trunc(t, mw) {
+      var s = t;
+      while (ctx.measureText(s).width > mw && s.length > 3) s = s.slice(0, -1);
+      return s !== t ? s.trim() + '…' : s;
+    }
+    function cover(im, x, y, w, h) {
+      var s = Math.max(w / im.width, h / im.height);
+      ctx.drawImage(im, x + (w - im.width * s) / 2, y + (h - im.height * s) / 2, im.width * s, im.height * s);
+    }
+    function statCard(x, y, w, h, val, label) {
+      ctx.fillStyle = 'rgba(255,255,255,0.05)'; AppUtils.roundRectPath(ctx, x, y, w, h, 20); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 1.5; AppUtils.roundRectPath(ctx, x, y, w, h, 20); ctx.stroke();
+      val = String(val);
+      ctx.fillStyle = accent;
+      ctx.font = 'bold ' + (val.length > 12 ? 26 : val.length > 9 ? 30 : val.length > 6 ? 36 : 44) + 'px Inter, sans-serif';
+      ctx.fillText(trunc(val, w - 44), x + 22, y + h - 46);
+      ctx.fillStyle = '#999999'; ctx.font = '600 20px Inter, sans-serif';
+      ctx.fillText(label.toUpperCase(), x + 22, y + h - 18);
+    }
+
+    var fonts = ['800 30px Inter', 'bold 44px Inter', '500 30px Inter', '600 20px Inter'].map(function (f) {
+      return document.fonts.load(f).catch(function () {});
+    });
+
+    Promise.all(fonts).then(function () {
+      return Promise.all(top.map(function (e) { return loadImg(AppUtils.getPosterUrl(e.poster)); }));
+    }).then(function (imgs) {
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#0b0b0d'; ctx.fillRect(0, 0, W, H);
+
+      // HERO
+      var heroH = 620, tw = 420, th = 600, c0 = W / 2 - tw / 2;
+      var layout = top.length === 1 ? [{ i: 0, x: c0, y: 10, r: 0 }]
+        : top.length === 2 ? [{ i: 1, x: c0 + 130, y: 40, r: 0.07 }, { i: 0, x: c0 - 130, y: 20, r: -0.05 }]
+        : [{ i: 1, x: c0 - 210, y: 40, r: -0.09 }, { i: 2, x: c0 + 210, y: 40, r: 0.09 }, { i: 0, x: c0, y: 10, r: 0 }];
+      ctx.save();
+      AppUtils.roundRectPath(ctx, 0, 0, W, heroH + 60, 0); ctx.clip();
+      layout.forEach(function (p) {
+        var im = imgs[p.i];
+        ctx.save();
+        ctx.translate(p.x + tw / 2, p.y + th / 2); ctx.rotate(p.r); ctx.translate(-tw / 2, -th / 2);
+        ctx.shadowColor = 'rgba(0,0,0,0.6)'; ctx.shadowBlur = 40; ctx.shadowOffsetY = 20;
+        AppUtils.roundRectPath(ctx, 0, 0, tw, th, 24);
+        if (im) { ctx.clip(); cover(im, 0, 0, tw, th); } else { ctx.fillStyle = '#1e1e1e'; ctx.fill(); }
+        ctx.restore();
+      });
+      var fade = ctx.createLinearGradient(0, heroH - 260, 0, heroH + 60);
+      fade.addColorStop(0, 'rgba(11,11,13,0)'); fade.addColorStop(1, 'rgba(11,11,13,1)');
+      ctx.fillStyle = fade; ctx.fillRect(0, 0, W, heroH + 60);
+      var scrim = ctx.createLinearGradient(0, 0, 0, 220);
+      scrim.addColorStop(0, 'rgba(0,0,0,0.55)'); scrim.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = scrim; ctx.fillRect(0, 0, W, 220);
+      ctx.restore();
+
+      // HEADER + BIG NUMBER
+      ctx.fillStyle = accent; ctx.font = '800 30px Inter, sans-serif';
+      ctx.fillText((G ? 'GAMES WRAPPED' : 'WRAPPED') + ' · ' + period.toUpperCase(), 60, 80);
+      ctx.fillRect(60, heroH + 20, 90, 8);
+      ctx.fillStyle = '#ffffff'; ctx.font = '800 130px Inter, sans-serif';
+      ctx.fillText(String(entries.length), 58, heroH + 175);
+      ctx.fillStyle = '#bbbbbb'; ctx.font = '500 34px Inter, sans-serif';
+      ctx.fillText(G ? 'games logged' : 'titles logged', 62, heroH + 215);
+
+      // 3 STATS
+      var mins = entries.reduce(function (s, e) { return s + (G ? (e.playtime || 0) * 60 : (e.runtime || 0)); }, 0);
+      var gc = {};
+      entries.forEach(function (e) {
+        var gs = (e.genres && e.genres.length) ? e.genres : (e.category ? [e.category] : []);
+        gs.forEach(function (g) { gc[g] = (gc[g] || 0) + 1; });
+      });
+      var tg = Object.keys(gc).sort(function (a, b) { return gc[b] - gc[a]; })[0] || '—';
+      var rated = entries.filter(function (e) { return rate(e); });
+      var avg = rated.length ? rated.reduce(function (s, e) { return s + rate(e); }, 0) / rated.length : 0;
+      var stats = [
+        [AppUtils.formatHours(mins), G ? 'Hours Played' : 'Watch Time'],
+        [avg ? avg.toFixed(1) + (G ? '/10' : '/5') : '—', 'Avg Rating'],
+        [tg, 'Top Genre']
+      ];
+      var gap = 20, cw = (W - 120 - gap * 2) / 3, sy = heroH + 260;
+      stats.forEach(function (s, i) { statCard(60 + i * (cw + gap), sy, cw, 140, s[0], s[1]); });
+
+      // TOP 3
+      var ly = 1090;
+      ctx.fillStyle = accent; ctx.font = '800 28px Inter, sans-serif';
+      ctx.fillText('TOP ' + top.length, 60, ly);
+      top.forEach(function (e, i) {
+        var y = ly + 25 + i * 150;
+        ctx.fillStyle = 'rgba(255,255,255,0.05)'; AppUtils.roundRectPath(ctx, 60, y, W - 120, 130, 20); ctx.fill();
+        ctx.save();
+        AppUtils.roundRectPath(ctx, 72, y + 10, 73, 110, 10); ctx.clip();
+        if (imgs[i]) cover(imgs[i], 72, y + 10, 73, 110); else { ctx.fillStyle = '#1e1e1e'; ctx.fillRect(72, y + 10, 73, 110); }
+        ctx.restore();
+        ctx.fillStyle = accent; ctx.font = '800 54px Inter, sans-serif';
+        ctx.fillText(String(i + 1), 170, y + 82);
+        ctx.fillStyle = '#ffffff'; ctx.font = '700 34px Inter, sans-serif';
+        ctx.fillText(trunc(e.title, W - 60 - 240 - 30), 240, y + 58);
+        var r = rate(e);
+        var line = (G ? (r ? r + '/10' : 'Unrated') : (r ? AppUtils.ratingToEmoji(r) + ' ' + r + '/5' : 'Unrated'))
+          + ' · ' + (G ? (e.completionStatus || 'logged') : (e.type || '')).toUpperCase();
+        ctx.fillStyle = '#cccccc'; ctx.font = '500 26px Inter, sans-serif';
+        ctx.fillText(line, 240, y + 100);
+      });
+
+      // MONTH STRIP
+      var mc = [], mx = 0, i;
+      for (i = 0; i < 12; i++) mc.push(0);
+      entries.forEach(function (e) { if (e.monthWatched) mc[e.monthWatched - 1]++; });
+      mc.forEach(function (c) { if (c > mx) mx = c; });
+      if (mx > 0) {
+        ctx.fillStyle = accent; ctx.font = '800 28px Inter, sans-serif';
+        ctx.fillText('ACTIVITY BY MONTH', 60, 1620);
+        var base = 1800, slot = (W - 120) / 12, bw = 44, letters = 'JFMAMJJASOND';
+        ctx.textAlign = 'center';
+        mc.forEach(function (c, m) {
+          var bh = Math.max(c ? 6 : 3, Math.round(c / mx * 100));
+          var bx = 60 + m * slot + (slot - bw) / 2;
+          ctx.fillStyle = c === mx ? accent : dim;
+          AppUtils.roundRectPath(ctx, bx, base - bh, bw, bh, 8); ctx.fill();
+          if (c) { ctx.fillStyle = '#dddddd'; ctx.font = '600 20px Inter, sans-serif'; ctx.fillText(String(c), bx + bw / 2, base - bh - 10); }
+          ctx.fillStyle = '#999999'; ctx.font = '500 20px Inter, sans-serif';
+          ctx.fillText(letters[m], bx + bw / 2, base + 34);
+        });
+        ctx.textAlign = 'left';
+      }
+
+      // FOOTER
+      ctx.fillStyle = '#666666'; ctx.font = '500 24px Inter, sans-serif';
+      ctx.fillText('Generated with Playlog', 60, H - 40);
+
+      document.getElementById('btn-download').style.display = 'block';
+    });
+  }
+
   function generateWrappedCard() {
 
     var entries = window.currentStatsEntries || [];
@@ -1224,7 +1732,7 @@ AppAuth.requireAuth(function (user) {
         ctx.textAlign = 'left';
         ctx.fillStyle = accent;
         ctx.font = '800 30px Inter, sans-serif';
-        ctx.fillText((isGames ? '🎮 GAMES WRAPPED' : '🎬 WRAPPED') + ' · ' + periodLabel.toUpperCase(), 60, 80);
+        ctx.fillText((isGames ? ' GAMES WRAPPED' : '🎬 WRAPPED') + ' · ' + periodLabel.toUpperCase(), 60, 80);
 
         // ===== ACCENT DIVIDER =====
         ctx.fillStyle = accent;

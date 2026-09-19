@@ -240,7 +240,7 @@ function applyStatusFields() {
 function checkCanAdd() {
   var canAdd = false;
   if (state.type === 'game') {
-    canAdd = !!state.selectedStatus;
+    canAdd = !!state.selectedStatus && (state.selectedStatus === 'wishlist' || state.selectedStatus === 'playing' || !!state.gameMonth);
   } else {
     canAdd = !!(state.selectedMonth && state.selectedRating);
   }
@@ -249,7 +249,7 @@ function checkCanAdd() {
 
 function setupSearch() {
   var input = document.getElementById('search-input');
-  var debouncedSearch = AppUtils.debounce(function(query) { doSearch(query); }, 500);
+  var debouncedSearch = AppUtils.debounce(function(query) { doSearch(query); }, 300);
   input.addEventListener('input', function() {
     var query = this.value.trim();
     if (query.length < 2) {
@@ -336,7 +336,7 @@ function loadSeasons(tmdbId) {
     seasons.forEach(function(s) {
       var item = document.createElement('div');
       item.className = 'result-item';
-      var posterUrl = AppUtils.getPosterUrl(s.poster);
+      var posterUrl = AppUtils.getPosterUrl(s.poster, 154);
       var isDup = findDuplicate(state.selectedResult, s.seasonNumber);
       item.innerHTML = (
         '<img class="result-thumb" src="' + (posterUrl || '') + '" alt="' + s.seasonName + '" onerror="this.style.background=\'#2a2a2a\'">' +
@@ -358,7 +358,18 @@ function loadSeasons(tmdbId) {
   });
 }
 
+function prefetchDetails() {
+  var r = state.selectedResult, s = state.selectedSeason;
+  state.pre = null;
+  if (!r) return;
+  if (r.type === 'game') state.pre = AppRAWG.getGameDetails(r.rawgId).then(function (d) { return [0, d.genres]; });
+  else if (r.type === 'movie') state.pre = AppTMDB.getMovieDetails(r.tmdbId).then(function (d) { return [d.runtime, d.genres]; });
+  else if (s) state.pre = Promise.all([AppTMDB.getSeasonRuntime(r.tmdbId, s.seasonNumber), AppTMDB.getSeriesGenres(r.tmdbId)]).then(function (x) { return [x[0] * (s.episodeCount || 1), x[1]]; });
+  if (state.pre) state.pre.catch(function () {});
+}
+
 function showStep3() {
+  prefetchDetails();
   var r = state.selectedResult;
   var s = state.selectedSeason;
   var posterUrl = AppUtils.getPosterUrl(s ? s.poster : r.poster);
@@ -371,7 +382,7 @@ function showStep3() {
   }
   document.getElementById('preview-title').textContent = r.title;
   document.getElementById('preview-sub').textContent =
-    r.type === 'series' ? (s ? s.seasonName : '') : r.type === 'game' ? '🎮 Game · ' + (r.releaseYear || '') : '🎬 Movie · ' + (r.releaseYear || '');
+    r.type === 'series' ? (s ? s.seasonName : '') : r.type === 'game' ? ' Game · ' + (r.releaseYear || '') : '🎬 Movie · ' + (r.releaseYear || '');
 
   // Reset
   state.selectedMonth = null;
@@ -398,7 +409,7 @@ function showStep3() {
 
 function setupBackButtons() {
   document.getElementById('btn-back-s1').addEventListener('click', function() {
-    window.location.href = '/playlist.html?id=' + state.playlistId;
+    window.location.href = state.playlistId ? '/playlist.html?id=' + state.playlistId : '/home.html?tab=games';
   });
   document.getElementById('btn-back-s2').addEventListener('click', function() { showStep(1); });
   document.getElementById('btn-back-s3').addEventListener('click', function() {
@@ -445,8 +456,8 @@ document.getElementById('btn-add').addEventListener('click', function() {
       entry.review = document.getElementById('review-input').value.trim() || null;
       entry.dropReason = state.selectedStatus === 'dropped'
         ? (document.getElementById('reason-input').value.trim() || null) : null;
-      entry.monthWatched = state.gameMonth || null;
-      entry.yearWatched = state.gameMonth ? state.gameYear : null;
+      entry.monthWatched = state.selectedStatus === 'wishlist' ? null : (state.gameMonth || null);
+      entry.yearWatched = state.selectedStatus === 'wishlist' ? null : state.gameYear;
       entry.rating = null;
       entry.runtime = 0;
     } else {
@@ -491,7 +502,10 @@ document.getElementById('btn-add').addEventListener('click', function() {
       });
   }
 
-  if (r.type === 'game') {
+  if (state.pre) {
+    state.pre.then(function (x) { saveEntry(x[0], x[1]); })
+      .catch(function () { saveEntry(r.type === 'game' ? 0 : r.type === 'movie' ? 90 : 30 * ((s && s.episodeCount) || 1), r.genres || []); });
+  } else if (r.type === 'game') {
     AppRAWG.getGameDetails(r.rawgId)
       .then(function(details) { saveEntry(0, details.genres); })
       .catch(function() { saveEntry(0, r.genres || []); });

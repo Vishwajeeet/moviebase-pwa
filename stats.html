@@ -12,6 +12,9 @@
 
   <link rel="manifest" href="/manifest.json">
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="/css/main.css">
 </head>
 
@@ -40,7 +43,7 @@
 
       <div class="type-pills" id="stats-type-pills">
         <button class="type-pill active" data-tab="media" type="button">🎬 Movies & Series</button>
-        <button class="type-pill" data-tab="games" type="button">🎮 Games</button>
+        <button class="type-pill" data-tab="games" type="button"> Games</button>
       </div>
 
       <!-- FILTERS -->
@@ -72,7 +75,9 @@
 
         </section>
 
-        <!-- STATS GRID: MOVIES & SERIES -->
+        <div id="viz"></div>
+
+<!-- STATS GRID: MOVIES & SERIES -->
 
         <div class="stat-strip" id="media-stats-strip">
 
@@ -156,7 +161,7 @@
             <div class="stat-number">—</div>
 
             <div class="stat-label">
-              Completion Rate
+              Active Months
             </div>
           </div>
 
@@ -168,7 +173,7 @@
 
           <div class="stat-box" id="g-total">
             <div class="stat-number">—</div>
-            <div class="stat-label">🎮 Games Logged</div>
+            <div class="stat-label"> Games Logged</div>
           </div>
 
           <div class="stat-box" id="g-hours">
@@ -178,12 +183,12 @@
 
           <div class="stat-box" id="g-completed">
             <div class="stat-number">—</div>
-            <div class="stat-label">✅ Completed</div>
+            <div class="stat-label"> Completed</div>
           </div>
 
           <div class="stat-box" id="g-playing">
             <div class="stat-number">—</div>
-            <div class="stat-label">🕹️ Currently Playing</div>
+            <div class="stat-label"> Currently Playing</div>
           </div>
 
           <div class="stat-box stat-full" id="g-genre">
@@ -208,12 +213,12 @@
 
           <div class="stat-box" id="g-dropped">
             <div class="stat-number">—</div>
-            <div class="stat-label">❌ Dropped</div>
+            <div class="stat-label">Dropped</div>
           </div>
 
           <div class="stat-box" id="g-wishlist">
             <div class="stat-number">—</div>
-            <div class="stat-label">🔖 Wishlist</div>
+            <div class="stat-label"> Wishlist</div>
           </div>
 
         </div>
@@ -238,13 +243,13 @@
           <div id="top-picks" class="grid-2"></div>
         </div>
 
-        <!-- FUN FACTS -->
+        <!--  -->
 
         <p class="section-title" style="margin-top:28px">
-          Fun Facts
+          
         </p>
 
-        <div id="fun-facts"></div>
+        
 
         <!-- DEEP CUTS -->
 
@@ -262,7 +267,14 @@
           Wrapped Card
         </p>
 
-        <button class="btn btn-primary" id="btn-generate" style="margin-bottom:16px">
+        <div class="toggle-pair" id="card-style" style="grid-template-columns:1fr 1fr;margin-bottom:12px">
+  <button class="toggle-btn active" data-style="detailed">Detailed</button>
+  <button class="toggle-btn" data-style="aesthetic">Aesthetic</button>
+</div>
+
+<p class="text-sm text-muted" style="margin-bottom:12px">Card follows the year/month you pick above. Try a single year for a sharper recap. <a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false" style="color:var(--accent)">↑ Change</a></p>
+
+<button class="btn btn-primary" id="btn-generate" style="margin-bottom:16px">
           ✨ Generate Wrapped Card
         </button>
 

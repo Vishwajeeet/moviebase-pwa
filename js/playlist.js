@@ -210,16 +210,16 @@ AppAuth.requireAuth(function (user) {
     var posterUrl = AppUtils.getPosterUrl(entry.poster);
     var posterHTML = posterUrl
       ? '<img class="poster-img" loading="lazy" src="' + posterUrl + '" alt="' + entry.title + '" onerror="this.style.display=\'none\'">'
-      : '<div class="poster-placeholder">' + (entry.type === 'game' ? '🎮' : '🎬') + '</div>';
+      : '<div class="poster-placeholder">' + (entry.type === 'game' ? '' : '🎬') + '</div>';
 
     var seasonBadge = '';
     if (entry.type === 'series') {
       seasonBadge = '<span class="badge badge-tl">S' + entry.season + '</span>';
-    } else if (entry.type === 'game') {
+    } else if (false) {
       var statusColors = { completed: '#22c55e', playing: '#f59e0b', dropped: '#ef4444', wishlist: '#6366f1' };
-      var statusLabels = { completed: '✅', playing: '🕹️', dropped: '❌', wishlist: '🔖' };
+      var statusLabels = { completed: '', playing: '', dropped: '❌', wishlist: '' };
       var st = entry.completionStatus || 'wishlist';
-      seasonBadge = '<span class="badge badge-tl" style="background:' + (statusColors[st] || '#6366f1') + ';color:#000">' + (statusLabels[st] || '🎮') + '</span>';
+      seasonBadge = '<span class="badge badge-tl" style="background:' + (statusColors[st] || '#6366f1') + ';color:#000">' + (statusLabels[st] || '') + '</span>';
     }
 
     var ratingBadge = '';
@@ -848,7 +848,7 @@ AppAuth.requireAuth(function (user) {
     container.innerHTML = '';
 
     var filtered = playlists.filter(function (p) {
-      return p.id !== playlistId;
+      return p.id !== playlistId && ((p.type || 'media') === 'game') === (currentMoveEntry.type === 'game');
     });
 
     if (filtered.length === 0) {
@@ -1072,7 +1072,7 @@ AppAuth.requireAuth(function (user) {
         ctx.font = '48px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillStyle = '#444';
-        ctx.fillText(entry.type === 'game' ? '🎮' : '🎬', x + tileW / 2, y + tileH / 2 + 16);
+        ctx.fillText(entry.type === 'game' ? '' : '🎬', x + tileW / 2, y + tileH / 2 + 16);
         ctx.textAlign = 'left';
         drawTitleLabel();
         finish();
@@ -1183,7 +1183,7 @@ AppAuth.requireAuth(function (user) {
       // Type badge
       ctx.font = '600 30px Inter, sans-serif';
       ctx.fillStyle = accent;
-      var typeLabel = isGame ? '🎮 Game' : entry.type === 'series' ? '📺 ' + (entry.seasonName || 'Series') : '🎬 Movie';
+      var typeLabel = isGame ? ' Game' : entry.type === 'series' ? '📺 ' + (entry.seasonName || 'Series') : '🎬 Movie';
       ctx.fillText(typeLabel, 70, 830);
 
       // Rating — big

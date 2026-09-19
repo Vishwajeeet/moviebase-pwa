@@ -1,4 +1,4 @@
-# 🎮🎬 Playlog
+# 🎬 Playlog
 
 A personal movie, web series, and **game** tracking Progressive Web App (PWA). Built to log everything you watch or play, organize it into playlists, rate it, and generate a Spotify Wrapped-style stats card — separately for your watching and your gaming.
 
@@ -80,7 +80,7 @@ No frameworks. No npm. No build step. Pure static files.
 - A rotating fun-fact banner, tab-aware ("watched" vs "played", 5-star vs 8+/10, etc.)
 
 **Stats — fully separated by tab**
-- Movies & Series and Games each get their own complete stat grid, fun facts, deep cuts, and top picks — nothing bleeds between tabs
+- Movies & Series and Games each get their own complete stat grid, , deep cuts, and top picks — nothing bleeds between tabs
 - Games get: games logged, hours played, completed, currently playing, dropped, wishlist, top genre, average rating (/10), most active month, longest single session
 - Movies & Series get: titles watched, watch time, movies, series seasons, top genre, average rating, most active month, longest watch, best month (avg rating), completion rate
 - A visual Playtime Leaderboard (top 5 by hours, medal-styled) for games

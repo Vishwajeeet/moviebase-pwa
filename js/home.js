@@ -312,7 +312,7 @@ function applyYearFilter() {
             '<img ' +
             'class="mini-poster" ' +
             'src="' +
-            AppUtils.getPosterUrl(e.poster) +
+            AppUtils.getPosterUrl(e.poster, 154) +
             '" ' +
             'onerror="this.style.visibility=\'hidden\'">'
           );
