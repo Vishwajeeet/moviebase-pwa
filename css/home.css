@@ -116,3 +116,7 @@ button.set-row{cursor:pointer;flex-wrap:nowrap}
 .page-title,.brand-bar span,.stat-number{display:inline-block;max-width:100%;overflow:visible!important;text-overflow:clip!important;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important;color:transparent!important;transform:translateZ(0);padding-bottom:.12em}
 .page-title,.brand-bar span{background-image:linear-gradient(135deg,#fff 30%,#c9a84c)!important}
 .stat-number{background-image:linear-gradient(135deg,#f4d15c,#c9a84c)!important}
+@media(hover:none){
+  .page-title,.brand-bar span{background:none!important;-webkit-text-fill-color:#eadfb4!important}
+  .stat-number{background:none!important;-webkit-text-fill-color:#e6c24f!important}
+}
