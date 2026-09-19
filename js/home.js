@@ -235,7 +235,7 @@ function renderHome() {
   AppUtils.setAmbient(top && top.poster);
   wrap.style.display = list.length ? 'block' : 'none';
   row.innerHTML = '';
-  list.slice(0, 6).forEach(function (e) {
+  list.slice(0, 7).forEach(function (e) {
     var a = document.createElement('a');
     a.className = 'recent-item';
     a.href = '/entry.html?id=' + e.id;
