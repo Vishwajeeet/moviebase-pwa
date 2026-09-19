@@ -68,7 +68,7 @@
 }
 @media(min-width:1200px){body .fab{right:calc((100vw - 1120px)/2 + 20px)}}
 
-/* RESET */
+/* RESET *//* RESET */
 * {
   box-sizing: border-box;
   margin: 0;

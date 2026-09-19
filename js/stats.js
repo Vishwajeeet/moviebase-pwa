@@ -38,6 +38,7 @@ AppAuth.requireAuth(function (user) {
 
 
       allEntries = entries || [];
+      AppUtils.setAmbient(allEntries[0] && allEntries[0].poster);
 
       populateYearSelect(allEntries);
 
@@ -1285,6 +1286,21 @@ AppAuth.requireAuth(function (user) {
     );
 
   }
+  function blurDraw(c, img, x, y, w, h, a) {
+    if (!img) return;
+    var sw = 24, sh = Math.max(1, Math.round(24 * h / w));
+    var s = document.createElement('canvas'); s.width = sw; s.height = sh;
+    var k = Math.max(sw / img.width, sh / img.height);
+    s.getContext('2d').drawImage(img, (sw - img.width * k) / 2, (sh - img.height * k) / 2, img.width * k, img.height * k);
+    var m = document.createElement('canvas'); m.width = sw * 6; m.height = sh * 6;
+    var mc = m.getContext('2d'); mc.imageSmoothingQuality = 'high'; mc.drawImage(s, 0, 0, m.width, m.height);
+    c.save(); c.globalAlpha = a; c.imageSmoothingQuality = 'high'; c.drawImage(m, x, y, w, h); c.restore();
+  }
+  function glass(c, x, y, w, h, r, a) {
+    c.fillStyle = 'rgba(255,255,255,' + (a || 0.07) + ')'; AppUtils.roundRectPath(c, x, y, w, h, r); c.fill();
+    c.strokeStyle = 'rgba(255,255,255,0.14)'; c.lineWidth = 1.5; AppUtils.roundRectPath(c, x, y, w, h, r); c.stroke();
+  }
+
   var cardStyle = 'detailed';
   document.querySelectorAll('#card-style .toggle-btn').forEach(function (b) {
     b.addEventListener('click', function () {
@@ -1309,7 +1325,7 @@ AppAuth.requireAuth(function (user) {
     var G = statsTab === 'games';
     var C = G
       ? { bg: '#7c5cff', panel: '#1f1f22', ink: '#ffffff', text: '#f2f2f2', mute: '#9a9aa2' }
-      : { bg: '#e0b93a', panel: '#f1efe6', ink: '#151515', text: '#151515', mute: '#6b675c' };
+      : { bg: '#e0b93a', panel: '#f1efe6', ink: '#151515', text: '#ffffff', mute: '#b8b8c0' };
     var lab = currentYear === 'all' ? 'ALL TIME' : String(currentYear);
     if (currentMonth !== 0) lab = AppUtils.monthShort(currentMonth).toUpperCase() + (currentYear === 'all' ? '' : ' ' + currentYear);
 
@@ -1362,7 +1378,11 @@ AppAuth.requireAuth(function (user) {
     }).then(function (img) {
       ctx.textAlign = 'left';
       ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, 1040);
-      ctx.fillStyle = C.panel; ctx.fillRect(0, 1040, W, H - 1040);
+      blurDraw(ctx, img, 0, 0, W, 1040, 0.35);
+      ctx.fillStyle = '#0e0e10'; ctx.fillRect(0, 1040, W, H - 1040);
+      blurDraw(ctx, img, 0, 1040, W, H - 1040, 0.55);
+      ctx.fillStyle = 'rgba(10,10,12,0.45)'; ctx.fillRect(0, 1040, W, H - 1040);
+      glass(ctx, 40, 1080, W - 80, 800, 32, 0.07);
 
       // checker frame
       var fx = 350, fy = 90, cs = 31;
@@ -1511,6 +1531,13 @@ AppAuth.requireAuth(function (user) {
       ctx.fillStyle = scrim; ctx.fillRect(0, 0, W, 220);
       ctx.restore();
 
+      blurDraw(ctx, imgs[0], 0, 680, W, H - 680, 0.45);
+      var vg = ctx.createLinearGradient(0, 680, 0, 900);
+      vg.addColorStop(0, 'rgba(11,11,13,1)'); vg.addColorStop(1, 'rgba(11,11,13,0)');
+      ctx.fillStyle = vg; ctx.fillRect(0, 680, W, 220);
+      var vg2 = ctx.createLinearGradient(0, 1100, 0, H);
+      vg2.addColorStop(0, 'rgba(11,11,13,0)'); vg2.addColorStop(1, 'rgba(11,11,13,0.6)');
+      ctx.fillStyle = vg2; ctx.fillRect(0, 1100, W, H - 1100);
       // HEADER + BIG NUMBER
       ctx.fillStyle = accent; ctx.font = '800 30px Inter, sans-serif';
       ctx.fillText((G ? 'GAMES WRAPPED' : 'WRAPPED') + ' · ' + period.toUpperCase(), 60, 80);
@@ -1544,7 +1571,7 @@ AppAuth.requireAuth(function (user) {
       ctx.fillText('TOP ' + top.length, 60, ly);
       top.forEach(function (e, i) {
         var y = ly + 25 + i * 150;
-        ctx.fillStyle = 'rgba(255,255,255,0.05)'; AppUtils.roundRectPath(ctx, 60, y, W - 120, 130, 20); ctx.fill();
+        glass(ctx, 60, y, W - 120, 130, 20, 0.08);
         ctx.save();
         AppUtils.roundRectPath(ctx, 72, y + 10, 73, 110, 10); ctx.clip();
         if (imgs[i]) cover(imgs[i], 72, y + 10, 73, 110); else { ctx.fillStyle = '#1e1e1e'; ctx.fillRect(72, y + 10, 73, 110); }
@@ -1567,6 +1594,8 @@ AppAuth.requireAuth(function (user) {
       mc.forEach(function (c) { if (c > mx) mx = c; });
       if (mx > 0) {
         ctx.fillStyle = accent; ctx.font = '800 28px Inter, sans-serif';
+        glass(ctx, 40, 1585, W - 80, 275, 24, 0.06);
+        ctx.fillStyle = accent;
         ctx.fillText('ACTIVITY BY MONTH', 60, 1620);
         var base = 1800, slot = (W - 120) / 12, bw = 44, letters = 'JFMAMJJASOND';
         ctx.textAlign = 'center';

@@ -2,7 +2,10 @@
 var ALL_ENTRIES = [];
 var ALL_PLAYLISTS = [];
 var ACTIVE_YEAR = 'all';
-var ACTIVE_TAB = new URLSearchParams(window.location.search).get('tab') === 'games' ? 'games' : 'media';
+var _tp = new URLSearchParams(window.location.search).get('tab');
+var _dp = localStorage.getItem('pl-tab-pref') || 'media';
+if (_dp === 'last') _dp = localStorage.getItem('pl-last-tab') || 'media';
+var ACTIVE_TAB = (_tp || _dp) === 'games' ? 'games' : 'media';
 AppAuth.requireAuth(function(user) {
 
   var uid = user.uid;
@@ -217,7 +220,40 @@ AppAuth.requireAuth(function(user) {
   });
 
 }
+function renderHome() {
+  var list = ALL_ENTRIES.filter(function (e) { return (e.type === 'game') === (ACTIVE_TAB === 'games'); });
+  var wrap = document.getElementById('recent-wrap');
+  if (!wrap) {
+    wrap = document.createElement('section');
+    wrap.id = 'recent-wrap';
+    wrap.innerHTML = '<p class="section-title">Recently Added</p><div id="recent-row" class="recent-row"></div>';
+    var sec = document.getElementById('playlists-grid').parentNode;
+    sec.parentNode.insertBefore(wrap, sec);
+  }
+  var row = document.getElementById('recent-row');
+  var top = list[0];
+  AppUtils.setAmbient(top && top.poster);
+  wrap.style.display = list.length ? 'block' : 'none';
+  row.innerHTML = '';
+  list.slice(0, 6).forEach(function (e) {
+    var a = document.createElement('a');
+    a.className = 'recent-item';
+    a.href = '/entry.html?id=' + e.id;
+    var u = AppUtils.getPosterUrl(e.poster, 342);
+    if (u) {
+      var im = document.createElement('img');
+      im.loading = 'lazy'; im.alt = ''; im.src = u;
+      a.appendChild(im);
+    }
+    var s = document.createElement('span');
+    s.textContent = e.title;
+    a.appendChild(s);
+    row.appendChild(a);
+  });
+}
+
 function applyYearFilter() {
+  renderHome();
 
   var filteredEntries =
     ACTIVE_YEAR === 'all'
@@ -328,6 +364,8 @@ function applyYearFilter() {
         last3.push({});
       }
 
+      var artSrc = last3[0] && last3[0].poster ? AppUtils.ambientUrl(last3[0].poster) : '';
+      if (artSrc) card.style.setProperty('--art', 'url("' + artSrc + '")');
       if (playlist.coverImage) {
         card.dataset.hasCover = '1';
         card.style.backgroundImage = 'url(' + playlist.coverImage + ')';
@@ -380,6 +418,7 @@ function applyYearFilter() {
     document.querySelectorAll('.type-pill').forEach(function(b) { b.classList.remove('active'); });
     btn.classList.add('active');
     ACTIVE_TAB = btn.dataset.tab === 'games' ? 'games' : 'media';
+    localStorage.setItem('pl-last-tab', ACTIVE_TAB);
     var url = new URL(window.location.href);
     url.searchParams.set('tab', ACTIVE_TAB);
     window.history.replaceState({}, '', url);

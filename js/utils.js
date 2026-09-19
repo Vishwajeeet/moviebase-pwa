@@ -78,6 +78,16 @@ window.AppUtils = {
     return 'https://images.weserv.nl/?url=' + encodeURIComponent(bare);
   },
 
+  ambientUrl: function(p) {
+    var u = this.getPosterUrl(p, 154);
+    return u ? 'https://images.weserv.nl/?url=' + encodeURIComponent(u.replace(/^https?:\/\//, '')) + '&w=40&h=60&fit=cover&blur=3' : null;
+  },
+
+  setAmbient: function(p) {
+    var u = p ? this.ambientUrl(p) : null;
+    document.body.style.setProperty('--amb', u ? 'url("' + u + '")' : 'none');
+  },
+
   debounce: function(fn, delay) {
     var timer;
     return function() {

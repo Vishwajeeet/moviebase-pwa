@@ -17,6 +17,7 @@ AppAuth.requireAuth(function (user) {
     var isGame = e.type === 'game';
     var posterUrl = AppUtils.getPosterUrl(e.poster);
     document.title = e.title + ' — Playlog';
+    AppUtils.setAmbient(e.poster);
 
     var rows = [];
     if (isGame) {

@@ -380,6 +380,7 @@ function showStep3() {
   } else {
     previewPoster.style.display = 'none';
   }
+  AppUtils.setAmbient(s ? (s.poster || r.poster) : r.poster);
   document.getElementById('preview-title').textContent = r.title;
   document.getElementById('preview-sub').textContent =
     r.type === 'series' ? (s ? s.seasonName : '') : r.type === 'game' ? ' Game · ' + (r.releaseYear || '') : '🎬 Movie · ' + (r.releaseYear || '');

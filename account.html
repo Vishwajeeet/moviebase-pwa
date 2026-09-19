@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0d0d0d">
+  <title>Settings — Playlog</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/home.css">
+</head>
+<body>
+  <div class="app-container">
+    <main class="page" id="settings-root">
+      <div class="brand-bar" id="brand-bar"><span>Playlog</span></div>
+
+      <header class="page-header">
+        <button class="back-btn" id="btn-back">←</button>
+        <h1 class="page-title">Settings</h1>
+        <div style="width:40px"></div>
+      </header>
+
+      <section class="set-profile">
+        <label class="acct-avatar acct-avatar-lg" for="avatar-input" id="acct-avatar-lg"></label>
+        <input type="file" id="avatar-input" accept="image/*" hidden>
+        <p class="acct-name" id="acct-name"></p>
+        <p class="text-sm text-muted" id="acct-email"></p>
+        <div class="set-actions">
+          <label class="btn btn-ghost" for="avatar-input">Change photo</label>
+          <button class="btn btn-ghost" id="btn-remove-avatar" style="display:none">Remove</button>
+        </div>
+      </section>
+
+      <p class="section-title">Preferences</p>
+      <div class="set-group">
+        <div class="set-row">
+          <div class="set-text"><b>Default tab</b><span>What opens first on Home</span></div>
+          <div class="toggle-pair" id="pref-tab" style="grid-template-columns:1fr 1fr 1fr">
+            <button class="toggle-btn" data-v="media">Movies</button>
+            <button class="toggle-btn" data-v="games">Games</button>
+            <button class="toggle-btn" data-v="last">Last used</button>
+          </div>
+        </div>
+        <div class="set-row">
+          <div class="set-text"><b>Playlist layout</b><span>How entries are arranged</span></div>
+          <div class="toggle-pair" id="pref-layout" style="grid-template-columns:1fr 1fr">
+            <button class="toggle-btn" data-v="flat">All entries</button>
+            <button class="toggle-btn" data-v="grouped">By month</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="section-title">Account</p>
+      <div class="set-group">
+        <button class="set-row set-danger" id="btn-logout">
+          <div class="set-text"><b>Log out</b><span>Sign out of Playlog on this device</span></div>
+          <span>→</span>
+        </button>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-overlay" id="logout-modal">
+    <div class="modal-box">
+      <p class="modal-title">Log out?</p>
+      <p style="color:var(--text-muted);margin-bottom:24px">You'll need to sign in again to access your data.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" id="btn-cancel-logout">Cancel</button>
+        <button class="btn btn-danger" id="btn-confirm-logout">Log out</button>
+      </div>
+    </div>
+  </div>
+  <div id="toast" class="toast"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/firebase-init.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/account.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+  </script>
+</body>
+</html>

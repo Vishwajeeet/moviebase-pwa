@@ -78,6 +78,7 @@ AppAuth.requireAuth(function (user) {
         }
 
         allEntries = entries;
+        AppUtils.setAmbient(entries[0] && entries[0].poster);
 
         document.getElementById(
           'playlist-title'

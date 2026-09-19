@@ -16,6 +16,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
   <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/home.css">
 </head>
 
 <body>
@@ -36,13 +37,15 @@
             Stats
           </button>
 
-          <button class="icon-btn" id="btn-signout" title="Sign out" style="color:#ff4d4d">
+          <a href="/account.html" class="icon-btn acct-btn" id="btn-account" title="Settings"><span class="acct-avatar" id="acct-avatar"></span></a>
+
+          <!-- <button class="icon-btn" id="btn-signout" hidden>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" stroke-linejoin="round">
               <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
               <line x1="12" y1="2" x2="12" y2="12"></line>
             </svg>
-          </button>
+          </button> -->
 
         </div>
 
@@ -211,6 +214,37 @@
     </div>
 
   </div>
+  <!-- Account -->
+  <!-- <div class="modal-overlay" id="account-modal">
+    <div class="modal-box">
+      <div class="acct-head">
+        <label class="acct-avatar acct-avatar-lg" for="avatar-input" id="acct-avatar-lg" title="Change photo"></label>
+        <input type="file" id="avatar-input" accept="image/*" style="display:none">
+        <div>
+          <p class="acct-name" id="acct-name"></p>
+          <p class="text-sm text-muted" id="acct-email"></p>
+        </div>
+      </div>
+      <button class="btn btn-ghost" id="btn-remove-avatar" style="display:none;margin-top:12px;font-size:13px;padding:8px 14px;width:auto">Remove photo</button>
+
+      <p class="acct-label">Default tab</p>
+      <div class="toggle-pair" id="pref-tab" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:0">
+        <button class="toggle-btn" data-v="media">Movies</button>
+        <button class="toggle-btn" data-v="games">Games</button>
+        <button class="toggle-btn" data-v="last">Last used</button>
+      </div>
+
+      <p class="acct-label">Playlist layout</p>
+      <div class="toggle-pair" id="pref-layout" style="grid-template-columns:1fr 1fr;margin-bottom:0">
+        <button class="toggle-btn" data-v="flat">All entries</button>
+        <button class="toggle-btn" data-v="grouped">By month</button>
+      </div>
+
+      <button class="btn btn-ghost" id="btn-close-account" style="margin-top:24px">Close</button>
+      <button class="btn btn-danger" id="btn-signout" style="margin-top:10px">Log out</button>
+    </div>
+  </div> -->
+
   <!-- Logout Confirm -->
   <div class="modal-overlay" id="logout-modal">
     <div class="modal-box">
@@ -242,6 +276,7 @@
 
   <!-- Page script -->
   <script src="/js/home.js"></script>
+  <script src="/js/account.js"></script>
   <script>
     window.addEventListener('pageshow', function (e) {
       if (e.persisted) window.location.reload();
